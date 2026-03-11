@@ -26,3 +26,5 @@ dist/
 
 # Python test cache
 .pytest_cache/
+.vercel
+.env*.local
