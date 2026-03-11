@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SAT Algebra Tutor — Practice</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --surface2: #16161f;
+      --border: #1e1e2e;
+      --accent: #7c6aff;
+      --accent-glow: rgba(124,106,255,0.2);
+      --text: #e8e6f0;
+      --muted: #6b6880;
+      --success: #3ecf8e;
+      --error: #ff4d6d;
+      --gold: #f0c050;
+    }
+
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse 50% 40% at 10% 10%, rgba(124,106,255,0.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* Nav */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem 2rem;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-weight: 800;
+      font-size: 1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-dot {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--accent), #a78bfa);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+
+    .nav-links { display: flex; align-items: center; gap: 0.5rem; }
+
+    .nav-link {
+      font-family: 'Inconsolata', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      transition: all 0.15s;
+    }
+
+    .nav-link:hover { color: var(--text); background: var(--surface); }
+    .nav-link.active { color: var(--accent); }
+
+    .nav-user {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .user-badge {
+      font-family: 'Inconsolata', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .btn-signout {
+      font-family: 'Inconsolata', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-signout:hover { border-color: var(--error); color: var(--error); }
+
+    /* Layout */
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 1.5rem;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { order: -1; }
+    }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.75rem;
+    }
+
+    /* Score card */
+    .score-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .score-card-title {
+      font-family: 'Inconsolata', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .score-big {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+
+    .score-big span { color: var(--accent); }
+
+    .score-sub {
+      font-family: 'Inconsolata', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .pct-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: 1rem;
+      overflow: hidden;
+    }
+
+    .pct-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--success));
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+
+    /* History mini */
+    .history-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+    }
+
+    .history-title {
+      font-family: 'Inconsolata', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem;
+    }
+
+    .history-item:last-child { border-bottom: none; }
+
+    .h-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .h-dot.correct { background: var(--success); }
+    .h-dot.incorrect { background: var(--error); }
+
+    .h-text {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--muted);
+      font-family: 'Inconsolata', monospace;
+      font-size: 0.72rem;
+    }
+
+    .h-ans {
+      font-family: 'Inconsolata', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    /* Main question area */
+    .q-label {
+      font-family: 'Inconsolata', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .q-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .q-text {
+      font-size: 1.15rem;
+      line-height: 1.65;
+      font-weight: 600;
+      margin-bottom: 1.75rem;
+      color: var(--text);
+    }
+
+    .choices { display: grid; gap: 0.6rem; }
+
+    .choice {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      padding: 0.9rem 1.1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface2);
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.15s;
+      text-align: left;
+      width: 100%;
+      color: var(--text);
+    }
+
+    .choice:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: rgba(124,106,255,0.06);
+    }
+
+    .choice.selected { border-color: var(--accent); background: rgba(124,106,255,0.1); }
+    .choice.correct { border-color: var(--success); background: rgba(62,207,142,0.08); color: var(--success); }
+    .choice.incorrect { border-color: var(--error); background: rgba(255,77,109,0.08); color: var(--error); }
+    .choice.reveal { border-color: var(--success); background: rgba(62,207,142,0.05); }
+    .choice:disabled { cursor: default; }
+
+    .choice-key {
+      font-family: 'Inconsolata', monospace;
+      font-size: 0.75rem;
+      font-weight: 500;
+      width: 1.6rem;
+      height: 1.6rem;
+      border: 1.5px solid currentColor;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      opacity: 0.7;
+    }
+
+    /* Result */
+    .result {
+      margin-top: 1.25rem;
+      padding: 1.25rem;
+      border-radius: 10px;
+      display: none;
+      animation: slidein 0.25s ease;
+    }
+
+    @keyframes slidein { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+    .result.correct { background: rgba(62,207,142,0.08); border: 1px solid rgba(62,207,142,0.25); }
+    .result.incorrect { background: rgba(255,77,109,0.08); border: 1px solid rgba(255,77,109,0.2); }
+
+    .result-verdict {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+    }
+
+    .result.correct .result-verdict { color: var(--success); }
+    .result.incorrect .result-verdict { color: var(--error); }
+
+    .result-exp {
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: var(--text);
+      opacity: 0.8;
+      white-space: pre-wrap;
+    }
+
+    /* Actions */
+    .actions { display: flex; gap: 0.75rem; margin-top: 1.25rem; flex-wrap: wrap; }
+
+    .btn-main {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0.7rem 1.5rem;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+
+    .btn-main:hover:not(:disabled) { background: #6a58f0; transform: translateY(-1px); }
+    .btn-main:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-sec {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.7rem 1.25rem;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-sec:hover { border-color: var(--muted); color: var(--text); }
+
+    /* Loading */
+    .loader-wrap { text-align: center; padding: 3rem; display: none; }
+    .spinner {
+      width: 32px; height: 32px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loader-txt { font-family: 'Inconsolata', monospace; font-size: 0.75rem; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; }
+
+    /* Welcome */
+    .welcome { text-align: center; padding: 2rem 0; }
+    .welcome h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .welcome p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.75rem; max-width: 360px; margin-inline: auto; margin-bottom: 1.75rem; }
+
+    /* Error */
+    .err {
+      font-family: 'Inconsolata', monospace;
+      font-size: 0.78rem;
+      color: var(--error);
+      background: rgba(255,77,109,0.08);
+      border: 1px solid rgba(255,77,109,0.2);
+      padding: 0.6rem 0.9rem;
+      border-radius: 6px;
+      margin-top: 0.75rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-logo">
+      <div class="nav-dot">S</div>
+      SAT Tutor
+    </div>
+    <div class="nav-links">
+      <a href="/app" class="nav-link active">Practice</a>
+      <a href="/leaderboard" class="nav-link">Leaderboard</a>
+    </div>
+    <div class="nav-user">
+      <span class="user-badge" id="userBadge"></span>
+      <button class="btn-signout" onclick="signOut()">Sign out</button>
+    </div>
+  </nav>
+
+  <div class="layout">
+    <!-- Main -->
+    <main>
+      <div class="card">
+        <!-- Welcome -->
+        <div class="welcome" id="welcomeState">
+          <h2>Ready to Practice?</h2>
+          <p>Each problem is freshly generated by Gemini AI. Get a step-by-step explanation after every answer.</p>
+          <button class="btn-main" onclick="loadProblem()">Get First Problem →</button>
+        </div>
+
+        <!-- Loading -->
+        <div class="loader-wrap" id="loadingState">
+          <div class="spinner"></div>
+          <div class="loader-txt">Generating problem…</div>
+        </div>
+
+        <!-- Question -->
+        <div id="questionState" style="display:none">
+          <div class="q-label">Question</div>
+          <p class="q-text" id="qText"></p>
+          <div class="choices" id="choices"></div>
+          <div class="err" id="errMsg"></div>
+          <div class="result" id="resultPanel">
+            <div class="result-verdict" id="resultVerdict"></div>
+            <div class="result-exp" id="resultExp"></div>
+          </div>
+          <div class="actions">
+            <button class="btn-main" id="submitBtn" onclick="submitAnswer()" disabled>Submit Answer</button>
+            <button class="btn-sec" id="nextBtn" onclick="loadProblem()" style="display:none">Next Problem →</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="score-card">
+        <div class="score-card-title">Session Score</div>
+        <div class="score-big"><span id="scoreCorrect">0</span> / <span id="scoreTotal">0</span></div>
+        <div class="score-sub" id="scorePct">No answers yet</div>
+        <div class="pct-bar"><div class="pct-fill" id="pctFill" style="width:0%"></div></div>
+      </div>
+
+      <div class="history-card">
+        <div class="history-title">Recent Answers</div>
+        <div id="historyList"><div style="font-family:Inconsolata,monospace;font-size:0.75rem;color:var(--muted)">No history yet</div></div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    // Auth guard
+    const token = localStorage.getItem('sat_token');
+    const user = JSON.parse(localStorage.getItem('sat_user') || '{}');
+    if (!token) window.location.href = '/';
+
+    document.getElementById('userBadge').textContent = user.username || user.email || '';
+
+    let selectedAnswer = null;
+    let answered = false;
+    let sessionCorrect = 0;
+    let sessionTotal = 0;
+    const recentHistory = [];
+
+    function authHeaders() {
+      return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+    }
+
+    function signOut() {
+      localStorage.removeItem('sat_token');
+      localStorage.removeItem('sat_user');
+      window.location.href = '/';
+    }
+
+    function show(id, display='block') { document.getElementById(id).style.display = display; }
+    function hide(id) { document.getElementById(id).style.display = 'none'; }
+
+    function updateScore() {
+      document.getElementById('scoreCorrect').textContent = sessionCorrect;
+      document.getElementById('scoreTotal').textContent = sessionTotal;
+      if (sessionTotal === 0) {
+        document.getElementById('scorePct').textContent = 'No answers yet';
+        document.getElementById('pctFill').style.width = '0%';
+      } else {
+        const pct = Math.round((sessionCorrect / sessionTotal) * 100);
+        document.getElementById('scorePct').textContent = `${pct}% accuracy`;
+        document.getElementById('pctFill').style.width = `${pct}%`;
+      }
+    }
+
+    function addHistory(question, isCorrect, answer) {
+      recentHistory.unshift({ question, isCorrect, answer });
+      if (recentHistory.length > 8) recentHistory.pop();
+      const list = document.getElementById('historyList');
+      list.innerHTML = recentHistory.map(h => `
+        <div class="history-item">
+          <div class="h-dot ${h.isCorrect ? 'correct' : 'incorrect'}"></div>
+          <div class="h-text">${h.question.slice(0, 45)}…</div>
+          <div class="h-ans">${h.answer}</div>
+        </div>
+      `).join('');
+    }
+
+    async function loadProblem() {
+      hide('welcomeState');
+      hide('questionState');
+      hide('loadingState');
+      show('loadingState');
+      selectedAnswer = null;
+      answered = false;
+
+      try {
+        const res = await fetch('/problem', { headers: authHeaders() });
+        if (res.status === 401) { signOut(); return; }
+        const data = await res.json();
+        if (data.detail) throw new Error(data.detail);
+
+        hide('loadingState');
+        show('questionState');
+
+        document.getElementById('qText').textContent = data.question;
+        document.getElementById('resultPanel').style.display = 'none';
+        document.getElementById('resultPanel').className = 'result';
+        document.getElementById('nextBtn').style.display = 'none';
+        document.getElementById('submitBtn').disabled = true;
+        document.getElementById('errMsg').style.display = 'none';
+
+        const container = document.getElementById('choices');
+        container.innerHTML = '';
+        for (const [key, text] of Object.entries(data.choices)) {
+          const btn = document.createElement('button');
+          btn.className = 'choice';
+          btn.innerHTML = `<span class="choice-key">${key}</span><span>${text}</span>`;
+          btn.onclick = () => selectChoice(key, btn);
+          container.appendChild(btn);
+        }
+      } catch (e) {
+        hide('loadingState');
+        show('questionState');
+        const err = document.getElementById('errMsg');
+        err.textContent = e.message;
+        err.style.display = 'block';
+      }
+    }
+
+    function selectChoice(key, btn) {
+      if (answered) return;
+      selectedAnswer = key;
+      document.querySelectorAll('.choice').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('submitBtn').disabled = false;
+    }
+
+    async function submitAnswer() {
+      if (!selectedAnswer || answered) return;
+      answered = true;
+      document.getElementById('submitBtn').disabled = true;
+      document.querySelectorAll('.choice').forEach(b => b.disabled = true);
+
+      try {
+        const res = await fetch('/answer', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ answer: selectedAnswer })
+        });
+        if (res.status === 401) { signOut(); return; }
+        const data = await res.json();
+        if (data.detail) throw new Error(data.detail);
+
+        sessionCorrect = data.score.correct;
+        sessionTotal = data.score.total;
+        updateScore();
+        addHistory(document.getElementById('qText').textContent, data.result === 'correct', selectedAnswer);
+
+        document.querySelectorAll('.choice').forEach(btn => {
+          const key = btn.querySelector('.choice-key').textContent;
+          if (key === data.correct_answer) btn.classList.add(data.result === 'correct' ? 'correct' : 'reveal');
+          if (key === selectedAnswer && data.result === 'incorrect') btn.classList.add('incorrect');
+        });
+
+        const panel = document.getElementById('resultPanel');
+        panel.className = `result ${data.result}`;
+        document.getElementById('resultVerdict').textContent =
+          data.result === 'correct' ? '✓ Correct!' : `✗ Incorrect — Answer was ${data.correct_answer}`;
+        document.getElementById('resultExp').textContent = data.explanation;
+        panel.style.display = 'block';
+        document.getElementById('nextBtn').style.display = '';
+      } catch (e) {
+        const err = document.getElementById('errMsg');
+        err.textContent = e.message;
+        err.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>
