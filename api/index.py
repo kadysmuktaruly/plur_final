@@ -26,8 +26,7 @@ for name, val in [
         raise ValueError(f"Missing {name}")
 
 gemini_client = genai.Client(api_key=GEMINI_API_KEY)
-SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 app = FastAPI()
 security = HTTPBearer()
@@ -119,8 +118,11 @@ async def signin(req: SignInRequest):
         if res.user is None:
             raise HTTPException(status_code=401, detail="Invalid credentials")
 
-        profile = supabase.table("profiles").select("username").eq("id", res.user.id).single().execute()
-        username = profile.data.get("username", "") if profile.data else ""
+        try:
+            profile = supabase.table("profiles").select("username").eq("id", res.user.id).single().execute()
+            username = profile.data.get("username", "") if profile.data else ""
+        except Exception:
+            username = res.user.email.split("@")[0]
 
         return {
             "access_token": res.session.access_token,
