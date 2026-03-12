@@ -160,9 +160,10 @@
   </div>
 
   <script>
+    // NEW
     const token = localStorage.getItem('sat_token');
     const user = JSON.parse(localStorage.getItem('sat_user') || '{}');
-    if (!token) window.location.href = '/';
+    if (!token) { window.location.replace('/'); throw new Error('redirect'); }
 
     function signOut() {
       localStorage.removeItem('sat_token');

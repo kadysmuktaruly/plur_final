@@ -4,6 +4,14 @@
     { "src": "api/index.py", "use": "@vercel/python" },
     { "src": "public/**", "use": "@vercel/static" }
   ],
+  "headers": [
+    {
+      "source": "/public/(.*).html",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" }
+      ]
+    }
+  ],
   "routes": [
     { "src": "/auth/(.*)", "dest": "api/index.py" },
     { "src": "/problem", "dest": "api/index.py" },
