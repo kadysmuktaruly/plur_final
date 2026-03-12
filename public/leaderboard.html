@@ -1,187 +1,233 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SAT Practice Leaderboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SAT Algebra Tutor — Leaderboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-<style>
-body{
-  font-family: Arial, sans-serif;
-  background:#0f172a;
-  color:white;
-  margin:0;
-}
-
-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:20px;
-  background:#020617;
-}
-
-.nav-link{
-  color:white;
-  text-decoration:none;
-  margin-right:15px;
-}
-
-.nav-link.active{
-  font-weight:bold;
-}
-
-button{
-  padding:8px 16px;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-}
-
-.signout{
-  background:#ef4444;
-  color:white;
-}
-
-.container{
-  max-width:900px;
-  margin:auto;
-  padding:30px;
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:20px;
-}
-
-th,td{
-  padding:12px;
-  border-bottom:1px solid #1e293b;
-  text-align:center;
-}
-
-th{
-  background:#1e293b;
-}
-
-.rank{
-  font-weight:bold;
-}
-
-.gold{color:#facc15;}
-.silver{color:#d1d5db;}
-.bronze{color:#f97316;}
-</style>
-</head>
-
-<body>
-
-<header>
-  <div>
-    <a href="/app.html" class="nav-link">Practice</a>
-    <a href="/leaderboard.html" class="nav-link active">Leaderboard</a>
-  </div>
-
-  <button class="signout" onclick="signOut()">Sign Out</button>
-</header>
-
-<div class="container">
-
-<h1>Global Leaderboard</h1>
-
-<table id="leaderboardTable">
-<thead>
-<tr>
-<th>Rank</th>
-<th>Name</th>
-<th>Score</th>
-<th>Problems Solved</th>
-</tr>
-</thead>
-
-<tbody id="leaderboardBody">
-<tr>
-<td colspan="4">Loading...</td>
-</tr>
-</tbody>
-
-</table>
-
-</div>
-
-<script>
-
-const token = localStorage.getItem("sat_token");
-const user = JSON.parse(localStorage.getItem("sat_user") || "{}");
-
-if (!token){
-  window.location.href="/";
-}
-
-function authHeaders(){
-  return{
-    "Content-Type":"application/json",
-    "Authorization":`Bearer ${token}`
-  }
-}
-
-function signOut(){
-  localStorage.removeItem("sat_token");
-  localStorage.removeItem("sat_user");
-  window.location.href="/";
-}
-
-async function loadLeaderboard(){
-
-  try{
-
-    const response = await fetch("/leaderboard/data",{
-      headers:authHeaders()
-    });
-
-    if(!response.ok){
-      signOut();
-      return;
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --surface2: #16161f;
+      --border: #1e1e2e;
+      --accent: #7c6aff;
+      --accent-glow: rgba(124,106,255,0.2);
+      --text: #e8e6f0;
+      --muted: #6b6880;
+      --success: #3ecf8e;
+      --error: #ff4d6d;
+      --gold: #f0c050;
+      --silver: #a0aec0;
+      --bronze: #c87941;
     }
 
-    const data = await response.json();
-    const body = document.getElementById("leaderboardBody");
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; }
 
-    body.innerHTML="";
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(240,192,80,0.04) 0%, transparent 60%);
+      pointer-events: none;
+    }
 
-    data.forEach((player,index)=>{
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.85rem 2rem;
+    }
 
-      let rankClass="";
-      if(index===0) rankClass="gold";
-      if(index===1) rankClass="silver";
-      if(index===2) rankClass="bronze";
+    .nav-logo { display: flex; align-items: center; gap: 0.6rem; font-weight: 800; font-size: 1rem; letter-spacing: -0.02em; }
+    .nav-dot { width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent), #a78bfa); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; }
+    .nav-links { display: flex; gap: 0.5rem; }
+    .nav-link { font-family: 'Inconsolata', monospace; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); text-decoration: none; padding: 0.4rem 0.75rem; border-radius: 6px; transition: all 0.15s; }
+    .nav-link:hover { color: var(--text); background: var(--surface); }
+    .nav-link.active { color: var(--accent); }
+    .btn-signout { font-family: 'Inconsolata', monospace; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.35rem 0.75rem; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
+    .btn-signout:hover { border-color: var(--error); color: var(--error); }
 
-      const row=`
-      <tr>
-        <td class="rank ${rankClass}">#${index+1}</td>
-        <td>${player.name || "Anonymous"}</td>
-        <td>${player.score || 0}</td>
-        <td>${player.problems_solved || 0}</td>
-      </tr>
-      `;
+    .page { max-width: 680px; margin: 0 auto; padding: 2.5rem 2rem; }
 
-      body.innerHTML+=row;
+    .page-header { margin-bottom: 2rem; }
+    .page-eyebrow { font-family: 'Inconsolata', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
+    .page-title { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; }
 
-    });
+    /* Top 3 podium */
+    .podium {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
 
-  }catch(error){
+    .podium-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
 
-    document.getElementById("leaderboardBody").innerHTML=
-    "<tr><td colspan='4'>Failed to load leaderboard</td></tr>";
+    .podium-item.rank-1 { border-color: rgba(240,192,80,0.4); background: rgba(240,192,80,0.04); }
+    .podium-item.rank-2 { border-color: rgba(160,174,192,0.3); }
+    .podium-item.rank-3 { border-color: rgba(200,121,65,0.3); }
 
-  }
+    .podium-medal { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .podium-name { font-size: 0.85rem; font-weight: 700; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .podium-score { font-family: 'Inconsolata', monospace; font-size: 1.25rem; font-weight: 500; }
+    .podium-item.rank-1 .podium-score { color: var(--gold); }
+    .podium-item.rank-2 .podium-score { color: var(--silver); }
+    .podium-item.rank-3 .podium-score { color: var(--bronze); }
+    .podium-acc { font-family: 'Inconsolata', monospace; font-size: 0.65rem; color: var(--muted); margin-top: 0.2rem; }
 
-}
+    /* Table */
+    .lb-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
 
-loadLeaderboard();
+    .lb-header {
+      display: grid;
+      grid-template-columns: 2.5rem 1fr 6rem 6rem 5rem;
+      padding: 0.75rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      font-family: 'Inconsolata', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
 
-</script>
+    .lb-row {
+      display: grid;
+      grid-template-columns: 2.5rem 1fr 6rem 6rem 5rem;
+      padding: 0.9rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+      transition: background 0.15s;
+    }
 
+    .lb-row:last-child { border-bottom: none; }
+    .lb-row:hover { background: var(--surface2); }
+    .lb-row.me { background: rgba(124,106,255,0.06); }
+
+    .lb-rank { font-family: 'Inconsolata', monospace; font-size: 0.8rem; color: var(--muted); font-weight: 500; }
+    .lb-name { font-size: 0.9rem; font-weight: 600; }
+    .lb-name .you-tag { font-family: 'Inconsolata', monospace; font-size: 0.6rem; color: var(--accent); background: rgba(124,106,255,0.15); padding: 0.1rem 0.4rem; border-radius: 4px; margin-left: 0.5rem; }
+    .lb-val { font-family: 'Inconsolata', monospace; font-size: 0.85rem; text-align: right; }
+    .lb-correct { color: var(--success); }
+    .lb-pct { color: var(--muted); font-size: 0.8rem; }
+
+    /* Loading */
+    .loader-wrap { text-align: center; padding: 3rem; }
+    .spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 1rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loader-txt { font-family: 'Inconsolata', monospace; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+
+    .empty { font-family: 'Inconsolata', monospace; font-size: 0.8rem; color: var(--muted); text-align: center; padding: 2rem; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-logo"><div class="nav-dot">S</div>SAT Tutor</div>
+    <div class="nav-links">
+      <a href="/app" class="nav-link">Practice</a>
+      <a href="/leaderboard" class="nav-link active">Leaderboard</a>
+    </div>
+    <button class="btn-signout" onclick="signOut()">Sign out</button>
+  </nav>
+
+  <div class="page">
+    <div class="page-header">
+      <div class="page-eyebrow">Top Performers</div>
+      <div class="page-title">Leaderboard</div>
+    </div>
+
+    <div id="podium" class="podium" style="display:none"></div>
+
+    <div class="lb-card" id="lbCard">
+      <div class="loader-wrap">
+        <div class="spinner"></div>
+        <div class="loader-txt">Loading…</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('sat_token');
+    const user = JSON.parse(localStorage.getItem('sat_user') || '{}');
+    if (!token) window.location.href = '/';
+
+    function signOut() {
+      localStorage.removeItem('sat_token');
+      localStorage.removeItem('sat_user');
+      window.location.href = '/';
+    }
+
+    const medals = ['🥇','🥈','🥉'];
+    const rankClasses = ['rank-1','rank-2','rank-3'];
+
+    async function loadLeaderboard() {
+      try {
+        const res = await fetch('/leaderboard/data', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.status === 401) { signOut(); return; }
+        const data = await res.json();
+        const lb = data.leaderboard || [];
+
+        // Podium (top 3)
+        const podiumEl = document.getElementById('podium');
+        if (lb.length >= 3) {
+          podiumEl.style.display = 'grid';
+          podiumEl.innerHTML = lb.slice(0, 3).map((u, i) => {
+            const pct = u.total_attempted > 0 ? Math.round((u.total_correct / u.total_attempted) * 100) : 0;
+            return `
+              <div class="podium-item ${rankClasses[i]}">
+                <div class="podium-medal">${medals[i]}</div>
+                <div class="podium-name">${u.username}</div>
+                <div class="podium-score">${u.total_correct}</div>
+                <div class="podium-acc">${pct}% acc · ${u.total_attempted} tried</div>
+              </div>`;
+          }).join('');
+        }
+
+        // Full table (rank 4+)
+        const card = document.getElementById('lbCard');
+        if (lb.length === 0) {
+          card.innerHTML = '<div class="empty">No data yet — be the first to practice!</div>';
+          return;
+        }
+
+        card.innerHTML = `
+          <div class="lb-header">
+            <div>#</div><div>Player</div><div style="text-align:right">Correct</div><div style="text-align:right">Attempted</div><div style="text-align:right">Accuracy</div>
+          </div>
+          ${lb.map((u, i) => {
+            const pct = u.total_attempted > 0 ? Math.round((u.total_correct / u.total_attempted) * 100) : 0;
+            const isMe = u.username === user.username;
+            return `
+              <div class="lb-row${isMe ? ' me' : ''}">
+                <div class="lb-rank">${i + 1}</div>
+                <div class="lb-name">${u.username}${isMe ? '<span class="you-tag">you</span>' : ''}</div>
+                <div class="lb-val lb-correct">${u.total_correct}</div>
+                <div class="lb-val">${u.total_attempted}</div>
+                <div class="lb-val lb-pct">${pct}%</div>
+              </div>`;
+          }).join('')}
+        `;
+      } catch (e) {
+        document.getElementById('lbCard').innerHTML = `<div class="empty">Failed to load: ${e.message}</div>`;
+      }
+    }
+
+    loadLeaderboard();
+  </script>
 </body>
 </html>
