@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,7 +9,8 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
+    /* ── DARK THEME (default) ── */
+    :root, [data-theme="dark"] {
       --bg: #0a0a0f;
       --surface: #111118;
       --surface2: #16161f;
@@ -20,428 +21,253 @@
       --muted: #6b6880;
       --success: #3ecf8e;
       --error: #ff4d6d;
-      --gold: #f0c050;
+      --nav-bg: rgba(10,10,15,0.88);
     }
 
-    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; }
+    /* ── LIGHT THEME ── */
+    [data-theme="light"] {
+      --bg: #f4f3f8;
+      --surface: #ffffff;
+      --surface2: #f0eff6;
+      --border: #e2e0ec;
+      --accent: #6c58f5;
+      --accent-glow: rgba(108,88,245,0.15);
+      --text: #1a1828;
+      --muted: #7b7893;
+      --success: #1a9e6a;
+      --error: #d93050;
+      --nav-bg: rgba(244,243,248,0.9);
+    }
+
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; transition: background 0.2s, color 0.2s; }
 
     body::before {
       content: '';
-      position: fixed;
-      inset: 0;
-      background: radial-gradient(ellipse 50% 40% at 10% 10%, rgba(124,106,255,0.06) 0%, transparent 60%);
+      position: fixed; inset: 0;
+      background: radial-gradient(ellipse 50% 40% at 10% 10%, rgba(124,106,255,0.05) 0%, transparent 60%);
       pointer-events: none;
     }
 
     /* Nav */
     nav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(10,10,15,0.85);
+      position: sticky; top: 0; z-index: 100;
+      background: var(--nav-bg);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
       padding: 0.85rem 2rem;
     }
 
-    .nav-logo {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      font-weight: 800;
-      font-size: 1rem;
-      letter-spacing: -0.02em;
-    }
-
-    .nav-dot {
-      width: 28px;
-      height: 28px;
-      background: linear-gradient(135deg, var(--accent), #a78bfa);
-      border-radius: 7px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.75rem;
-      font-weight: 800;
-    }
-
+    .nav-logo { display: flex; align-items: center; gap: 0.6rem; font-weight: 800; font-size: 1rem; letter-spacing: -0.02em; }
+    .nav-dot { width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent), #a78bfa); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; color: white; }
     .nav-links { display: flex; align-items: center; gap: 0.5rem; }
-
-    .nav-link {
-      font-family: 'Inconsolata', monospace;
-      font-size: 0.75rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      text-decoration: none;
-      padding: 0.4rem 0.75rem;
-      border-radius: 6px;
-      transition: all 0.15s;
-    }
-
+    .nav-link { font-family: 'Inconsolata', monospace; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); text-decoration: none; padding: 0.4rem 0.75rem; border-radius: 6px; transition: all 0.15s; }
     .nav-link:hover { color: var(--text); background: var(--surface); }
     .nav-link.active { color: var(--accent); }
+    .nav-user { display: flex; align-items: center; gap: 0.6rem; }
+    .user-badge { font-family: 'Inconsolata', monospace; font-size: 0.75rem; color: var(--muted); }
 
-    .nav-user {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
+    /* Theme toggle */
+    .theme-btn {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+      width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 0.9rem; transition: all 0.15s;
     }
+    .theme-btn:hover { border-color: var(--accent); }
 
-    .user-badge {
-      font-family: 'Inconsolata', monospace;
-      font-size: 0.75rem;
-      color: var(--muted);
-    }
-
-    .btn-signout {
-      font-family: 'Inconsolata', monospace;
-      font-size: 0.7rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 0.35rem 0.75rem;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
+    .btn-signout { font-family: 'Inconsolata', monospace; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.35rem 0.75rem; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
     .btn-signout:hover { border-color: var(--error); color: var(--error); }
 
     /* Layout */
-    .layout {
-      display: grid;
-      grid-template-columns: 1fr 280px;
-      gap: 1.5rem;
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
-
-    @media (max-width: 768px) {
-      .layout { grid-template-columns: 1fr; }
-      .sidebar { order: -1; }
-    }
+    .layout { display: grid; grid-template-columns: 1fr 280px; gap: 1.5rem; max-width: 1000px; margin: 0 auto; padding: 2rem; }
+    @media (max-width: 768px) { .layout { grid-template-columns: 1fr; } .sidebar { order: -1; } }
 
     /* Card */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.75rem;
-    }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.75rem; }
 
     /* Score card */
-    .score-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .score-card-title {
-      font-family: 'Inconsolata', monospace;
-      font-size: 0.65rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 1rem;
-    }
-
-    .score-big {
-      font-size: 2.5rem;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1;
-      margin-bottom: 0.25rem;
-    }
-
+    .score-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; margin-bottom: 1rem; }
+    .score-card-title { font-family: 'Inconsolata', monospace; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+    .score-big { font-size: 2.5rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1; margin-bottom: 0.25rem; }
     .score-big span { color: var(--accent); }
+    .score-sub { font-family: 'Inconsolata', monospace; font-size: 0.75rem; color: var(--muted); }
+    .pct-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 1rem; overflow: hidden; }
+    .pct-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--success)); border-radius: 2px; transition: width 0.5s ease; }
 
-    .score-sub {
-      font-family: 'Inconsolata', monospace;
-      font-size: 0.75rem;
-      color: var(--muted);
-    }
-
-    .pct-bar {
-      height: 4px;
-      background: var(--border);
-      border-radius: 2px;
-      margin-top: 1rem;
-      overflow: hidden;
-    }
-
-    .pct-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--success));
-      border-radius: 2px;
-      transition: width 0.5s ease;
-    }
-
-    /* History mini */
-    .history-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.5rem;
-    }
-
-    .history-title {
-      font-family: 'Inconsolata', monospace;
-      font-size: 0.65rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 1rem;
-    }
-
-    .history-item {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      padding: 0.5rem 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.8rem;
-    }
-
+    /* History */
+    .history-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; }
+    .history-title { font-family: 'Inconsolata', monospace; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+    .history-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
     .history-item:last-child { border-bottom: none; }
-
-    .h-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
+    .h-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
     .h-dot.correct { background: var(--success); }
     .h-dot.incorrect { background: var(--error); }
+    .h-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-family: 'Inconsolata', monospace; font-size: 0.72rem; }
+    .h-ans { font-family: 'Inconsolata', monospace; font-size: 0.7rem; color: var(--muted); }
 
-    .h-text {
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      color: var(--muted);
-      font-family: 'Inconsolata', monospace;
-      font-size: 0.72rem;
+    /* Difficulty + Timer controls */
+    .controls {
+      display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center;
     }
 
-    .h-ans {
-      font-family: 'Inconsolata', monospace;
-      font-size: 0.7rem;
-      color: var(--muted);
-    }
+    .control-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .control-label { font-family: 'Inconsolata', monospace; font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
 
-    /* Main question area */
-    .q-label {
-      font-family: 'Inconsolata', monospace;
-      font-size: 0.65rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 1.25rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+    .seg-btns { display: flex; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 3px; gap: 3px; }
+    .seg-btn {
+      font-family: 'Inconsolata', monospace; font-size: 0.72rem; font-weight: 500;
+      padding: 0.3rem 0.7rem; border: none; border-radius: 5px;
+      background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s;
     }
+    .seg-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    .seg-btn.easy.active { color: var(--success); }
+    .seg-btn.medium.active { color: #f0c050; }
+    .seg-btn.hard.active { color: var(--error); }
 
+    /* Timer */
+    .timer-wrap {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-family: 'Inconsolata', monospace; font-size: 1rem; font-weight: 500;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.4rem 0.9rem;
+      transition: border-color 0.3s, color 0.3s;
+    }
+    .timer-wrap.warning { border-color: #f0c050; color: #f0c050; }
+    .timer-wrap.danger { border-color: var(--error); color: var(--error); animation: pulse 0.6s infinite; }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+    .timer-icon { font-size: 0.85rem; }
+    #timerDisplay { min-width: 2.5rem; text-align: center; }
+
+    /* Question area */
+    .q-label { font-family: 'Inconsolata', monospace; font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem; }
     .q-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .q-label-badge { font-size: 0.6rem; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 600; }
+    .q-label-badge.easy { background: rgba(62,207,142,0.15); color: var(--success); }
+    .q-label-badge.medium { background: rgba(240,192,80,0.15); color: #f0c050; }
+    .q-label-badge.hard { background: rgba(255,77,109,0.15); color: var(--error); }
 
-    .q-text {
-      font-size: 1.15rem;
-      line-height: 1.65;
-      font-weight: 600;
-      margin-bottom: 1.75rem;
-      color: var(--text);
-    }
+    .q-text { font-size: 1.15rem; line-height: 1.65; font-weight: 600; margin-bottom: 1.75rem; color: var(--text); }
 
     .choices { display: grid; gap: 0.6rem; }
-
-    .choice {
-      display: flex;
-      align-items: center;
-      gap: 0.9rem;
-      padding: 0.9rem 1.1rem;
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      background: var(--surface2);
-      cursor: pointer;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: all 0.15s;
-      text-align: left;
-      width: 100%;
-      color: var(--text);
-    }
-
-    .choice:hover:not(:disabled) {
-      border-color: var(--accent);
-      background: rgba(124,106,255,0.06);
-    }
-
-    .choice.selected { border-color: var(--accent); background: rgba(124,106,255,0.1); }
+    .choice { display: flex; align-items: center; gap: 0.9rem; padding: 0.9rem 1.1rem; border: 1.5px solid var(--border); border-radius: 10px; background: var(--surface2); cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: all 0.15s; text-align: left; width: 100%; color: var(--text); }
+    .choice:hover:not(:disabled) { border-color: var(--accent); background: var(--surface); }
+    .choice.selected { border-color: var(--accent); background: rgba(124,106,255,0.08); }
     .choice.correct { border-color: var(--success); background: rgba(62,207,142,0.08); color: var(--success); }
     .choice.incorrect { border-color: var(--error); background: rgba(255,77,109,0.08); color: var(--error); }
-    .choice.reveal { border-color: var(--success); background: rgba(62,207,142,0.05); }
+    .choice.reveal { border-color: var(--success); }
     .choice:disabled { cursor: default; }
-
-    .choice-key {
-      font-family: 'Inconsolata', monospace;
-      font-size: 0.75rem;
-      font-weight: 500;
-      width: 1.6rem;
-      height: 1.6rem;
-      border: 1.5px solid currentColor;
-      border-radius: 5px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      opacity: 0.7;
-    }
+    .choice-key { font-family: 'Inconsolata', monospace; font-size: 0.75rem; font-weight: 500; width: 1.6rem; height: 1.6rem; border: 1.5px solid currentColor; border-radius: 5px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; opacity: 0.7; }
 
     /* Result */
-    .result {
-      margin-top: 1.25rem;
-      padding: 1.25rem;
-      border-radius: 10px;
-      display: none;
-      animation: slidein 0.25s ease;
-    }
-
+    .result { margin-top: 1.25rem; padding: 1.25rem; border-radius: 10px; display: none; animation: slidein 0.25s ease; }
     @keyframes slidein { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
-
     .result.correct { background: rgba(62,207,142,0.08); border: 1px solid rgba(62,207,142,0.25); }
     .result.incorrect { background: rgba(255,77,109,0.08); border: 1px solid rgba(255,77,109,0.2); }
-
-    .result-verdict {
-      font-size: 1rem;
-      font-weight: 700;
-      margin-bottom: 0.6rem;
-    }
-
+    .result-verdict { font-size: 1rem; font-weight: 700; margin-bottom: 0.6rem; }
     .result.correct .result-verdict { color: var(--success); }
     .result.incorrect .result-verdict { color: var(--error); }
+    .result-exp { font-size: 0.85rem; line-height: 1.7; color: var(--text); opacity: 0.8; white-space: pre-wrap; }
 
-    .result-exp {
-      font-size: 0.85rem;
-      line-height: 1.7;
-      color: var(--text);
-      opacity: 0.8;
-      white-space: pre-wrap;
-    }
+    /* Timeout banner */
+    .timeout-banner { background: rgba(240,192,80,0.1); border: 1px solid rgba(240,192,80,0.3); color: #f0c050; font-family: 'Inconsolata', monospace; font-size: 0.8rem; padding: 0.6rem 1rem; border-radius: 8px; margin-bottom: 0.75rem; display: none; }
 
     /* Actions */
     .actions { display: flex; gap: 0.75rem; margin-top: 1.25rem; flex-wrap: wrap; }
-
-    .btn-main {
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 0.7rem 1.5rem;
-      font-family: 'Syne', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: 0 4px 16px var(--accent-glow);
-    }
-
-    .btn-main:hover:not(:disabled) { background: #6a58f0; transform: translateY(-1px); }
+    .btn-main { background: var(--accent); color: white; border: none; border-radius: 8px; padding: 0.7rem 1.5rem; font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px var(--accent-glow); }
+    .btn-main:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
     .btn-main:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
-
-    .btn-sec {
-      background: transparent;
-      color: var(--muted);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.7rem 1.25rem;
-      font-family: 'Syne', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
+    .btn-sec { background: transparent; color: var(--muted); border: 1px solid var(--border); border-radius: 8px; padding: 0.7rem 1.25rem; font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .btn-sec:hover { border-color: var(--muted); color: var(--text); }
 
     /* Loading */
     .loader-wrap { text-align: center; padding: 3rem; display: none; }
-    .spinner {
-      width: 32px; height: 32px;
-      border: 2px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      margin: 0 auto 1rem;
-    }
+    .spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 1rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .loader-txt { font-family: 'Inconsolata', monospace; font-size: 0.75rem; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; }
 
     /* Welcome */
     .welcome { text-align: center; padding: 2rem 0; }
     .welcome h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; }
-    .welcome p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.75rem; max-width: 360px; margin-inline: auto; margin-bottom: 1.75rem; }
+    .welcome p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; max-width: 360px; margin: 0 auto 1.75rem; }
 
     /* Error */
-    .err {
-      font-family: 'Inconsolata', monospace;
-      font-size: 0.78rem;
-      color: var(--error);
-      background: rgba(255,77,109,0.08);
-      border: 1px solid rgba(255,77,109,0.2);
-      padding: 0.6rem 0.9rem;
-      border-radius: 6px;
-      margin-top: 0.75rem;
-      display: none;
-    }
+    .err { font-family: 'Inconsolata', monospace; font-size: 0.78rem; color: var(--error); background: rgba(255,77,109,0.08); border: 1px solid rgba(255,77,109,0.2); padding: 0.6rem 0.9rem; border-radius: 6px; margin-top: 0.75rem; display: none; }
   </style>
 </head>
 <body>
   <nav>
-    <div class="nav-logo">
-      <div class="nav-dot">S</div>
-      SAT Tutor
-    </div>
+    <div class="nav-logo"><div class="nav-dot">S</div>SAT Tutor</div>
     <div class="nav-links">
       <a href="/app" class="nav-link active">Practice</a>
       <a href="/leaderboard" class="nav-link">Leaderboard</a>
     </div>
     <div class="nav-user">
       <span class="user-badge" id="userBadge"></span>
+      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
       <button class="btn-signout" onclick="signOut()">Sign out</button>
     </div>
   </nav>
 
   <div class="layout">
-    <!-- Main -->
     <main>
       <div class="card">
         <!-- Welcome -->
         <div class="welcome" id="welcomeState">
           <h2>Ready to Practice?</h2>
-          <p>Each problem is freshly generated by Gemini AI. Get a step-by-step explanation after every answer.</p>
+          <p>Choose your difficulty and timer, then get a fresh AI-generated SAT problem.</p>
+
+          <!-- Controls -->
+          <div class="controls" style="justify-content:center;margin-bottom:2rem">
+            <div class="control-group">
+              <div class="control-label">Difficulty</div>
+              <div class="seg-btns">
+                <button class="seg-btn easy active" onclick="setDifficulty('easy',this)">Easy</button>
+                <button class="seg-btn medium" onclick="setDifficulty('medium',this)">Medium</button>
+                <button class="seg-btn hard" onclick="setDifficulty('hard',this)">Hard</button>
+              </div>
+            </div>
+            <div class="control-group">
+              <div class="control-label">Timer</div>
+              <div class="seg-btns">
+                <button class="seg-btn active" onclick="setTimer(0,this)">Off</button>
+                <button class="seg-btn" onclick="setTimer(30,this)">30s</button>
+                <button class="seg-btn" onclick="setTimer(60,this)">60s</button>
+                <button class="seg-btn" onclick="setTimer(90,this)">90s</button>
+              </div>
+            </div>
+          </div>
+
           <button class="btn-main" onclick="loadProblem()">Get First Problem →</button>
         </div>
 
         <!-- Loading -->
         <div class="loader-wrap" id="loadingState">
           <div class="spinner"></div>
-          <div class="loader-txt">Generating problem…</div>
+          <div class="loader-txt" id="loadingTxt">Generating problem…</div>
         </div>
 
         <!-- Question -->
         <div id="questionState" style="display:none">
-          <div class="q-label">Question</div>
+          <!-- Controls row (in-question) -->
+          <div class="controls" style="margin-bottom:1.25rem">
+            <div class="seg-btns">
+              <button class="seg-btn easy" id="qEasy" onclick="setDifficulty('easy',this)">Easy</button>
+              <button class="seg-btn medium" id="qMedium" onclick="setDifficulty('medium',this)">Medium</button>
+              <button class="seg-btn hard" id="qHard" onclick="setDifficulty('hard',this)">Hard</button>
+            </div>
+            <div class="timer-wrap" id="timerWrap" style="display:none">
+              <span class="timer-icon">⏱</span>
+              <span id="timerDisplay">--</span>
+            </div>
+          </div>
+
+          <div class="q-label">
+            Question
+            <span class="q-label-badge" id="diffBadge"></span>
+            <span style="flex:1;height:1px;background:var(--border);display:block"></span>
+          </div>
           <p class="q-text" id="qText"></p>
+          <div class="timeout-banner" id="timeoutBanner">⏰ Time's up! The answer has been submitted automatically.</div>
           <div class="choices" id="choices"></div>
           <div class="err" id="errMsg"></div>
           <div class="result" id="resultPanel">
@@ -456,7 +282,6 @@
       </div>
     </main>
 
-    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="score-card">
         <div class="score-card-title">Session Score</div>
@@ -464,7 +289,6 @@
         <div class="score-sub" id="scorePct">No answers yet</div>
         <div class="pct-bar"><div class="pct-fill" id="pctFill" style="width:0%"></div></div>
       </div>
-
       <div class="history-card">
         <div class="history-title">Recent Answers</div>
         <div id="historyList"><div style="font-family:Inconsolata,monospace;font-size:0.75rem;color:var(--muted)">No history yet</div></div>
@@ -473,18 +297,40 @@
   </div>
 
   <script>
-    // Auth guard
+    // ── Auth ──
     const token = localStorage.getItem('sat_token');
     const user = JSON.parse(localStorage.getItem('sat_user') || '{}');
     if (!token) window.location.href = '/';
-
     document.getElementById('userBadge').textContent = user.username || user.email || '';
 
+    // ── Theme ──
+    const savedTheme = localStorage.getItem('sat_theme') || 'dark';
+    applyTheme(savedTheme);
+
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      document.getElementById('themeBtn').textContent = t === 'dark' ? '🌙' : '☀️';
+      localStorage.setItem('sat_theme', t);
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      applyTheme(current === 'dark' ? 'light' : 'dark');
+    }
+
+    // ── State ──
     let selectedAnswer = null;
     let answered = false;
     let sessionCorrect = 0;
     let sessionTotal = 0;
+    let difficulty = 'easy';
+    let timerSeconds = 0;
+    let timerInterval = null;
+    let timeLeft = 0;
     const recentHistory = [];
+
+    // Sync in-question difficulty buttons on load
+    syncDiffBtns();
 
     function authHeaders() {
       return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
@@ -496,9 +342,76 @@
       window.location.href = '/';
     }
 
-    function show(id, display='block') { document.getElementById(id).style.display = display; }
+    function show(id, d='block') { document.getElementById(id).style.display = d; }
     function hide(id) { document.getElementById(id).style.display = 'none'; }
 
+    // ── Difficulty ──
+    function setDifficulty(d, btn) {
+      difficulty = d;
+      // Update whichever seg-btn group the clicked button is in
+      btn.closest('.seg-btns').querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      syncDiffBtns();
+    }
+
+    function syncDiffBtns() {
+      ['easy','medium','hard'].forEach(d => {
+        const b = document.getElementById('q' + d.charAt(0).toUpperCase() + d.slice(1));
+        if (b) b.classList.toggle('active', d === difficulty);
+      });
+      const badge = document.getElementById('diffBadge');
+      if (badge) { badge.textContent = difficulty; badge.className = `q-label-badge ${difficulty}`; }
+    }
+
+    // ── Timer ──
+    function setTimer(s, btn) {
+      timerSeconds = s;
+      btn.closest('.seg-btns').querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function startTimer() {
+      stopTimer();
+      if (timerSeconds === 0) { hide('timerWrap'); return; }
+      show('timerWrap', 'flex');
+      timeLeft = timerSeconds;
+      updateTimerDisplay();
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        if (timeLeft <= 0) {
+          stopTimer();
+          autoSubmit();
+        }
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    }
+
+    function updateTimerDisplay() {
+      const el = document.getElementById('timerDisplay');
+      const wrap = document.getElementById('timerWrap');
+      el.textContent = `${timeLeft}s`;
+      wrap.className = 'timer-wrap' + (timeLeft <= 10 ? ' danger' : timeLeft <= 20 ? ' warning' : '');
+    }
+
+    function autoSubmit() {
+      if (answered) return;
+      // Pick first choice if nothing selected
+      if (!selectedAnswer) {
+        const first = document.querySelector('.choice');
+        if (first) {
+          const key = first.querySelector('.choice-key').textContent;
+          selectedAnswer = key;
+        }
+      }
+      show('timeoutBanner');
+      submitAnswer(true);
+    }
+
+    // ── Score ──
     function updateScore() {
       document.getElementById('scoreCorrect').textContent = sessionCorrect;
       document.getElementById('scoreTotal').textContent = sessionTotal;
@@ -515,32 +428,35 @@
     function addHistory(question, isCorrect, answer) {
       recentHistory.unshift({ question, isCorrect, answer });
       if (recentHistory.length > 8) recentHistory.pop();
-      const list = document.getElementById('historyList');
-      list.innerHTML = recentHistory.map(h => `
+      document.getElementById('historyList').innerHTML = recentHistory.map(h => `
         <div class="history-item">
           <div class="h-dot ${h.isCorrect ? 'correct' : 'incorrect'}"></div>
           <div class="h-text">${h.question.slice(0, 45)}…</div>
           <div class="h-ans">${h.answer}</div>
-        </div>
-      `).join('');
+        </div>`).join('');
     }
 
+    // ── Load problem ──
     async function loadProblem() {
+      stopTimer();
       hide('welcomeState');
       hide('questionState');
       hide('loadingState');
       show('loadingState');
+      document.getElementById('loadingTxt').textContent = `Generating ${difficulty} problem…`;
       selectedAnswer = null;
       answered = false;
+      hide('timeoutBanner');
 
       try {
-        const res = await fetch('/problem', { headers: authHeaders() });
+        const res = await fetch(`/problem?difficulty=${difficulty}`, { headers: authHeaders() });
         if (res.status === 401) { signOut(); return; }
         const data = await res.json();
         if (data.detail) throw new Error(data.detail);
 
         hide('loadingState');
         show('questionState');
+        syncDiffBtns();
 
         document.getElementById('qText').textContent = data.question;
         document.getElementById('resultPanel').style.display = 'none';
@@ -558,6 +474,8 @@
           btn.onclick = () => selectChoice(key, btn);
           container.appendChild(btn);
         }
+
+        startTimer();
       } catch (e) {
         hide('loadingState');
         show('questionState');
@@ -575,9 +493,10 @@
       document.getElementById('submitBtn').disabled = false;
     }
 
-    async function submitAnswer() {
+    async function submitAnswer(timedOut = false) {
       if (!selectedAnswer || answered) return;
       answered = true;
+      stopTimer();
       document.getElementById('submitBtn').disabled = true;
       document.querySelectorAll('.choice').forEach(b => b.disabled = true);
 

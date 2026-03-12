@@ -143,18 +143,25 @@ async def get_me(user_id: str = Depends(verify_token)):
 
 
 # ── problem generation ────────────────────────────────────────────────────────
-async def generate_problem():
-    prompt = """
-Generate one SAT-style algebra problem.
+async def generate_problem(difficulty: str = "easy"):
+    difficulty_guide = {
+        "easy": "basic algebra: solving simple linear equations, evaluating expressions, basic substitution. Suitable for 6th-8th grade.",
+        "medium": "intermediate algebra: systems of equations, quadratics, inequalities, word problems. Suitable for SAT Math section.",
+        "hard": "advanced algebra: complex quadratics, polynomial manipulation, function composition, challenging word problems. Hardest SAT Math level.",
+    }
+    guide = difficulty_guide.get(difficulty, difficulty_guide["easy"])
+    prompt = f"""
+Generate one SAT-style algebra problem at {difficulty.upper()} difficulty.
+Difficulty guide: {guide}
 
 Return ONLY valid JSON:
 
-{
+{{
   "question": "...",
-  "choices": {"A":"...","B":"...","C":"...","D":"..."},
+  "choices": {{"A":"...","B":"...","C":"...","D":"..."}},
   "correct_answer": "A",
   "explanation": "step-by-step explanation"
-}
+}}
 """
     loop = asyncio.get_running_loop()
     resp = await loop.run_in_executor(
@@ -171,14 +178,14 @@ Return ONLY valid JSON:
 
 
 @app.get("/problem")
-async def get_problem(user_id: str = Depends(verify_token)):
+async def get_problem(difficulty: str = "easy", user_id: str = Depends(verify_token)):
     try:
         # Check for existing active session
         existing = supabase.table("active_sessions").select("id").eq("user_id", user_id).execute()
         if existing.data:
             raise HTTPException(status_code=400, detail="Answer the current question first.")
 
-        data = await generate_problem()
+        data = await generate_problem(difficulty)
 
         # Store in Supabase
         supabase.table("active_sessions").upsert({
