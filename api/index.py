@@ -4,7 +4,7 @@ import asyncio
 from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Depends
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse, HTMLResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from google import genai
@@ -13,10 +13,11 @@ from supabase import create_client, Client
 load_dotenv()
 
 # ── env vars ───────────────────────────────────────────────────────────────────
-GEMINI_API_KEY    = os.getenv("GEMINI_API_KEY")
-SUPABASE_URL      = os.getenv("SUPABASE_URL")
-SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY")
+GEMINI_API_KEY       = os.getenv("GEMINI_API_KEY")
+SUPABASE_URL         = os.getenv("SUPABASE_URL")
+SUPABASE_ANON_KEY    = os.getenv("SUPABASE_ANON_KEY")
 SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
+SITE_URL             = os.getenv("SITE_URL", "http://127.0.0.1:8000")
 
 for name, val in [
     ("GEMINI_API_KEY", GEMINI_API_KEY),
@@ -140,6 +141,128 @@ async def get_me(user_id: str = Depends(verify_token)):
     return profile.data
 
 
+@app.get("/auth/google")
+async def google_auth():
+    res = supabase.auth.sign_in_with_oauth({
+        "provider": "google",
+        "options": {
+            "redirect_to": SITE_URL + "/auth/callback"
+        }
+    })
+    return RedirectResponse(res.url)
+
+
+@app.get("/auth/callback")
+async def auth_callback(code: str = None):
+    if not code:
+        return RedirectResponse("/")
+
+    try:
+        # Exchange the code for a real session
+        res = supabase.auth.exchange_code_for_session({"auth_code": code})
+        access_token = res.session.access_token
+        user = res.user
+
+        # Ensure profile exists
+        try:
+            profile = supabase.table("profiles").select("username").eq("id", user.id).single().execute()
+            username = profile.data.get("username", "") if profile.data else ""
+        except Exception:
+            username = ""
+
+        if not username:
+            raw = ""
+            if user.user_metadata:
+                raw = user.user_metadata.get("full_name") or user.user_metadata.get("name") or ""
+            if not raw:
+                raw = (user.email or "user").split("@")[0]
+            base = "".join(c for c in raw.replace(" ", "_") if c.isalnum() or c == "_")[:20] or "user"
+            username = base
+            suffix = 1
+            while True:
+                existing = supabase.table("profiles").select("id").eq("username", username).execute()
+                if not existing.data:
+                    break
+                username = f"{base}{suffix}"
+                suffix += 1
+            supabase.table("profiles").upsert({
+                "id": user.id,
+                "username": username,
+                "total_correct": 0,
+                "total_attempted": 0,
+            }).execute()
+
+        # Redirect to /app with token embedded so JS can store it
+        return HTMLResponse(f"""<!DOCTYPE html>
+<html>
+<head><title>Signing in…</title></head>
+<body>
+<script>
+  localStorage.setItem('sat_token', '{access_token}');
+  localStorage.setItem('sat_user', JSON.stringify({{
+    id: '{user.id}',
+    email: '{user.email}',
+    username: '{username}'
+  }}));
+  window.location.href = '/app';
+</script>
+<p style="font-family:sans-serif;text-align:center;margin-top:3rem;color:#888">Signing you in…</p>
+</body>
+</html>""")
+    except Exception as e:
+        return RedirectResponse("/?error=oauth_failed")
+
+
+@app.post("/auth/google-profile")
+async def google_profile(user_id: str = Depends(verify_token)):
+    """
+    Called after Google OAuth to ensure a profile row exists.
+    Creates one from the Google account data if missing.
+    """
+    user_resp = supabase.auth.admin.get_user_by_id(user_id)
+    user = user_resp.user
+    email = user.email or ""
+
+    # Try fetching existing profile
+    try:
+        profile = supabase.table("profiles").select("*").eq("id", user_id).single().execute()
+        if profile.data:
+            return {
+                "id": user_id,
+                "email": email,
+                "username": profile.data.get("username", email.split("@")[0])
+            }
+    except Exception:
+        pass
+
+    # No profile yet — create one using Google display name or email prefix
+    raw_username = ""
+    if user.user_metadata:
+        raw_username = user.user_metadata.get("full_name") or user.user_metadata.get("name") or ""
+    if not raw_username:
+        raw_username = email.split("@")[0]
+
+    # Make username URL-safe and unique
+    base = "".join(c for c in raw_username.replace(" ", "_") if c.isalnum() or c == "_")[:20] or "user"
+    username = base
+    suffix = 1
+    while True:
+        existing = supabase.table("profiles").select("id").eq("username", username).execute()
+        if not existing.data:
+            break
+        username = f"{base}{suffix}"
+        suffix += 1
+
+    supabase.table("profiles").insert({
+        "id": user_id,
+        "username": username,
+        "total_correct": 0,
+        "total_attempted": 0,
+    }).execute()
+
+    return {"id": user_id, "email": email, "username": username}
+
+
 # ── problem pool logic ─────────────────────────────────────────────────────────
 
 async def generate_problems_batch(difficulty: str, count: int) -> list:
@@ -187,17 +310,13 @@ async def ensure_pool_for_user(user_id: str, difficulty: str):
     """
     If this user has no unsolved problems left at this difficulty,
     generate POOL_SIZE more and add them to the shared pool.
-    Other users who haven't finished existing problems are unaffected —
-    they'll naturally reach the new batch once they clear the old ones.
     """
-    # All problem IDs at this difficulty
     problems_res = supabase.table("problems")\
         .select("id")\
         .eq("difficulty", difficulty)\
         .execute()
     all_ids = [p["id"] for p in (problems_res.data or [])]
 
-    # IDs this user already answered
     answered_res = supabase.table("user_problem_answers")\
         .select("problem_id")\
         .eq("user_id", user_id)\
@@ -206,11 +325,10 @@ async def ensure_pool_for_user(user_id: str, difficulty: str):
 
     unsolved = [pid for pid in all_ids if pid not in answered_ids]
 
-    # User still has problems to work through — nothing to generate
     if unsolved:
-        return
+        return  # user still has problems to work through
 
-    # User is caught up — generate a fresh batch for the shared pool
+    # User is caught up — generate a fresh batch
     problems = await generate_problems_batch(difficulty, POOL_SIZE)
     rows = [
         {
@@ -225,18 +343,13 @@ async def ensure_pool_for_user(user_id: str, difficulty: str):
     supabase.table("problems").insert(rows).execute()
 
 
-def get_next_problem_for_user(user_id: str, difficulty: str) -> dict | None:
-    """
-    Return the next problem this user hasn't answered yet, or None.
-    """
-    # Get IDs the user already answered
+def get_next_problem_for_user(user_id: str, difficulty: str):
     answered_res = supabase.table("user_problem_answers")\
         .select("problem_id")\
         .eq("user_id", user_id)\
         .execute()
     answered_ids = [a["problem_id"] for a in (answered_res.data or [])]
 
-    # Fetch problems for difficulty not in answered list
     query = supabase.table("problems")\
         .select("*")\
         .eq("difficulty", difficulty)
@@ -252,7 +365,6 @@ def get_next_problem_for_user(user_id: str, difficulty: str) -> dict | None:
 @app.get("/problem")
 async def get_problem(difficulty: str = "easy", user_id: str = Depends(verify_token)):
     try:
-        # Check for existing active session first
         existing = supabase.table("active_sessions")\
             .select("id,problem_id")\
             .eq("user_id", user_id)\
@@ -260,10 +372,8 @@ async def get_problem(difficulty: str = "easy", user_id: str = Depends(verify_to
         if existing.data:
             raise HTTPException(status_code=400, detail="Answer the current question first.")
 
-        # Ensure this user has problems to solve (generate more if they've finished all)
         await ensure_pool_for_user(user_id, difficulty)
 
-        # Get next unsolved problem for this user
         problem = get_next_problem_for_user(user_id, difficulty)
 
         if problem is None:
@@ -274,7 +384,6 @@ async def get_problem(difficulty: str = "easy", user_id: str = Depends(verify_to
                 "message": "You've solved all available problems at this difficulty! Check back soon for more."
             }
 
-        # Store active session (include problem_id so answer can reference it)
         supabase.table("active_sessions").upsert({
             "user_id": user_id,
             "problem_id": problem["id"],
@@ -288,9 +397,7 @@ async def get_problem(difficulty: str = "easy", user_id: str = Depends(verify_to
             "question": problem["question"],
             "choices": problem["choices"],
             "pool_exhausted": False,
-            "pool_info": {
-                "difficulty": difficulty,
-            }
+            "pool_info": {"difficulty": difficulty}
         }
     except HTTPException:
         raise
@@ -315,7 +422,6 @@ async def check_answer(req: AnswerRequest, user_id: str = Depends(verify_token))
     is_correct = answer == correct
     problem_id = data.get("problem_id")
 
-    # Record answer in user_problem_answers
     if problem_id:
         supabase.table("user_problem_answers").upsert({
             "user_id": user_id,
@@ -324,7 +430,6 @@ async def check_answer(req: AnswerRequest, user_id: str = Depends(verify_token))
             "is_correct": is_correct,
         }).execute()
 
-    # Also keep score_history for backward compat / history page
     supabase.table("score_history").insert({
         "user_id": user_id,
         "question": data["question"],
@@ -334,7 +439,6 @@ async def check_answer(req: AnswerRequest, user_id: str = Depends(verify_token))
         "explanation": data["explanation"],
     }).execute()
 
-    # Update profile stats
     profile = supabase.table("profiles")\
         .select("total_correct,total_attempted")\
         .eq("id", user_id).single().execute()
@@ -345,7 +449,6 @@ async def check_answer(req: AnswerRequest, user_id: str = Depends(verify_token))
         "total_attempted": current["total_attempted"] + 1,
     }).eq("id", user_id).execute()
 
-    # Clear active session
     supabase.table("active_sessions").delete().eq("user_id", user_id).execute()
 
     return {
@@ -361,7 +464,6 @@ async def check_answer(req: AnswerRequest, user_id: str = Depends(verify_token))
 
 @app.get("/pool/status")
 async def pool_status(user_id: str = Depends(verify_token)):
-    """Return pool stats per difficulty — useful for the UI."""
     result = {}
     for diff in ["easy", "medium", "hard"]:
         total_res = supabase.table("problems")\
