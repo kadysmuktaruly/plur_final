@@ -237,6 +237,7 @@
             </div>
           </div>
 
+          <p id="poolStatus" style="font-family:Inconsolata,monospace;font-size:0.78rem;color:var(--muted);margin-bottom:1rem;min-height:1.2em;"></p>
           <button class="btn-main" onclick="loadProblem()">Get First Problem →</button>
         </div>
 
@@ -331,6 +332,7 @@
 
     // Sync in-question difficulty buttons on load
     syncDiffBtns();
+    setTimeout(loadPoolStatus, 100);
 
     function authHeaders() {
       return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
@@ -436,6 +438,27 @@
         </div>`).join('');
     }
 
+    // ── Pool status ──
+    async function loadPoolStatus() {
+      try {
+        const res = await fetch('/pool/status', { headers: authHeaders() });
+        if (!res.ok) return;
+        const data = await res.json();
+        const info = data[difficulty];
+        if (!info) return;
+        const el = document.getElementById('poolStatus');
+        if (el) {
+          if (info.remaining === 0) {
+            el.textContent = `You solved all ${info.total} ${difficulty} problems!`;
+            el.style.color = 'var(--success)';
+          } else {
+            el.textContent = `${info.remaining} of ${info.total} ${difficulty} problems remaining for you`;
+            el.style.color = 'var(--muted)';
+          }
+        }
+      } catch (_) {}
+    }
+
     // ── Load problem ──
     async function loadProblem() {
       stopTimer();
@@ -443,7 +466,7 @@
       hide('questionState');
       hide('loadingState');
       show('loadingState');
-      document.getElementById('loadingTxt').textContent = `Generating ${difficulty} problem…`;
+      document.getElementById('loadingTxt').textContent = `Fetching ${difficulty} problem… (first load may take a moment)`;
       selectedAnswer = null;
       answered = false;
       hide('timeoutBanner');
@@ -454,9 +477,22 @@
         const data = await res.json();
         if (data.detail) throw new Error(data.detail);
 
+        // Pool exhausted for this user
+        if (data.pool_exhausted) {
+          hide('loadingState');
+          show('welcomeState');
+          const el = document.getElementById('poolStatus');
+          if (el) {
+            el.textContent = '🎉 ' + data.message;
+            el.style.color = 'var(--success)';
+          }
+          return;
+        }
+
         hide('loadingState');
         show('questionState');
         syncDiffBtns();
+        loadPoolStatus();
 
         document.getElementById('qText').textContent = data.question;
         document.getElementById('resultPanel').style.display = 'none';

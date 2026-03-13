@@ -4,7 +4,7 @@ import asyncio
 from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Depends
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from google import genai
@@ -12,30 +12,33 @@ from supabase import create_client, Client
 
 load_dotenv()
 
-# ── env vars ──────────────────────────────────────────────────────────────────
+# ── env vars ───────────────────────────────────────────────────────────────────
 GEMINI_API_KEY    = os.getenv("GEMINI_API_KEY")
 SUPABASE_URL      = os.getenv("SUPABASE_URL")
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY")
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
 
 for name, val in [
     ("GEMINI_API_KEY", GEMINI_API_KEY),
     ("SUPABASE_URL", SUPABASE_URL),
     ("SUPABASE_ANON_KEY", SUPABASE_ANON_KEY),
+    ("SUPABASE_SERVICE_KEY", SUPABASE_SERVICE_KEY),
 ]:
     if not val:
         raise ValueError(f"Missing {name}")
 
 gemini_client = genai.Client(api_key=GEMINI_API_KEY)
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 app = FastAPI()
 security = HTTPBearer()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+POOL_SIZE = 30  # problems per difficulty level
 
-# ── auth helpers ──────────────────────────────────────────────────────────────
+
+# ── auth helpers ───────────────────────────────────────────────────────────────
 def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:
-    """Verify token using Supabase's get_user — no JWT secret needed."""
     token = credentials.credentials
     try:
         response = supabase.auth.get_user(token)
@@ -46,11 +49,7 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) 
         raise HTTPException(status_code=401, detail="Invalid token")
 
 
-def get_user_id(user_id: str) -> str:
-    return user_id
-
-
-# ── request models ────────────────────────────────────────────────────────────
+# ── request models ─────────────────────────────────────────────────────────────
 class SignUpRequest(BaseModel):
     email: str
     password: str
@@ -64,7 +63,7 @@ class AnswerRequest(BaseModel):
     answer: str
 
 
-# ── static pages ──────────────────────────────────────────────────────────────
+# ── static pages ───────────────────────────────────────────────────────────────
 @app.get("/")
 async def home():
     return FileResponse(BASE_DIR / "public" / "index.html")
@@ -78,7 +77,7 @@ async def leaderboard_page():
     return FileResponse(BASE_DIR / "public" / "leaderboard.html")
 
 
-# ── auth endpoints ────────────────────────────────────────────────────────────
+# ── auth endpoints ─────────────────────────────────────────────────────────────
 @app.post("/auth/signup")
 async def signup(req: SignUpRequest):
     try:
@@ -90,7 +89,6 @@ async def signup(req: SignUpRequest):
         if res.user is None:
             raise HTTPException(status_code=400, detail="Signup failed")
 
-        # Create profile row
         supabase.table("profiles").upsert({
             "id": res.user.id,
             "username": req.username,
@@ -142,8 +140,10 @@ async def get_me(user_id: str = Depends(verify_token)):
     return profile.data
 
 
-# ── problem generation ────────────────────────────────────────────────────────
-async def generate_problem(difficulty: str = "easy"):
+# ── problem pool logic ─────────────────────────────────────────────────────────
+
+async def generate_problems_batch(difficulty: str, count: int) -> list:
+    """Ask Gemini to generate `count` problems at once."""
     difficulty_guide = {
         "easy": "basic algebra: solving simple linear equations, evaluating expressions, basic substitution. Suitable for 6th-8th grade.",
         "medium": "intermediate algebra: systems of equations, quadratics, inequalities, word problems. Suitable for SAT Math section.",
@@ -151,17 +151,20 @@ async def generate_problem(difficulty: str = "easy"):
     }
     guide = difficulty_guide.get(difficulty, difficulty_guide["easy"])
     prompt = f"""
-Generate one SAT-style algebra problem at {difficulty.upper()} difficulty.
+Generate exactly {count} unique SAT-style algebra problems at {difficulty.upper()} difficulty.
 Difficulty guide: {guide}
 
-Return ONLY valid JSON:
+Return ONLY a valid JSON array (no markdown, no extra text):
 
-{{
-  "question": "...",
-  "choices": {{"A":"...","B":"...","C":"...","D":"..."}},
-  "correct_answer": "A",
-  "explanation": "step-by-step explanation"
-}}
+[
+  {{
+    "question": "...",
+    "choices": {{"A":"...","B":"...","C":"...","D":"..."}},
+    "correct_answer": "A",
+    "explanation": "step-by-step explanation"
+  }},
+  ...
+]
 """
     loop = asyncio.get_running_loop()
     resp = await loop.run_in_executor(
@@ -174,29 +177,121 @@ Return ONLY valid JSON:
     )
     if resp.text is None:
         raise ValueError("Gemini returned empty response")
-    return json.loads(resp.text)
+    problems = json.loads(resp.text)
+    if not isinstance(problems, list):
+        raise ValueError("Gemini did not return a list")
+    return problems
 
 
+async def ensure_pool_for_user(user_id: str, difficulty: str):
+    """
+    If this user has no unsolved problems left at this difficulty,
+    generate POOL_SIZE more and add them to the shared pool.
+    Other users who haven't finished existing problems are unaffected —
+    they'll naturally reach the new batch once they clear the old ones.
+    """
+    # All problem IDs at this difficulty
+    problems_res = supabase.table("problems")\
+        .select("id")\
+        .eq("difficulty", difficulty)\
+        .execute()
+    all_ids = [p["id"] for p in (problems_res.data or [])]
+
+    # IDs this user already answered
+    answered_res = supabase.table("user_problem_answers")\
+        .select("problem_id")\
+        .eq("user_id", user_id)\
+        .execute()
+    answered_ids = {a["problem_id"] for a in (answered_res.data or [])}
+
+    unsolved = [pid for pid in all_ids if pid not in answered_ids]
+
+    # User still has problems to work through — nothing to generate
+    if unsolved:
+        return
+
+    # User is caught up — generate a fresh batch for the shared pool
+    problems = await generate_problems_batch(difficulty, POOL_SIZE)
+    rows = [
+        {
+            "difficulty": difficulty,
+            "question": p["question"],
+            "choices": p["choices"],
+            "correct_answer": p["correct_answer"],
+            "explanation": p["explanation"],
+        }
+        for p in problems
+    ]
+    supabase.table("problems").insert(rows).execute()
+
+
+def get_next_problem_for_user(user_id: str, difficulty: str) -> dict | None:
+    """
+    Return the next problem this user hasn't answered yet, or None.
+    """
+    # Get IDs the user already answered
+    answered_res = supabase.table("user_problem_answers")\
+        .select("problem_id")\
+        .eq("user_id", user_id)\
+        .execute()
+    answered_ids = [a["problem_id"] for a in (answered_res.data or [])]
+
+    # Fetch problems for difficulty not in answered list
+    query = supabase.table("problems")\
+        .select("*")\
+        .eq("difficulty", difficulty)
+
+    if answered_ids:
+        query = query.not_.in_("id", answered_ids)
+
+    result = query.limit(1).execute()
+    return result.data[0] if result.data else None
+
+
+# ── problem endpoints ──────────────────────────────────────────────────────────
 @app.get("/problem")
 async def get_problem(difficulty: str = "easy", user_id: str = Depends(verify_token)):
     try:
-        # Check for existing active session
-        existing = supabase.table("active_sessions").select("id").eq("user_id", user_id).execute()
+        # Check for existing active session first
+        existing = supabase.table("active_sessions")\
+            .select("id,problem_id")\
+            .eq("user_id", user_id)\
+            .execute()
         if existing.data:
             raise HTTPException(status_code=400, detail="Answer the current question first.")
 
-        data = await generate_problem(difficulty)
+        # Ensure this user has problems to solve (generate more if they've finished all)
+        await ensure_pool_for_user(user_id, difficulty)
 
-        # Store in Supabase
+        # Get next unsolved problem for this user
+        problem = get_next_problem_for_user(user_id, difficulty)
+
+        if problem is None:
+            return {
+                "question": None,
+                "choices": None,
+                "pool_exhausted": True,
+                "message": "You've solved all available problems at this difficulty! Check back soon for more."
+            }
+
+        # Store active session (include problem_id so answer can reference it)
         supabase.table("active_sessions").upsert({
             "user_id": user_id,
-            "question": data["question"],
-            "choices": json.dumps(data["choices"]),
-            "correct_answer": data["correct_answer"],
-            "explanation": data["explanation"],
+            "problem_id": problem["id"],
+            "question": problem["question"],
+            "choices": json.dumps(problem["choices"]) if isinstance(problem["choices"], dict) else problem["choices"],
+            "correct_answer": problem["correct_answer"],
+            "explanation": problem["explanation"],
         }).execute()
 
-        return {"question": data["question"], "choices": data["choices"]}
+        return {
+            "question": problem["question"],
+            "choices": problem["choices"],
+            "pool_exhausted": False,
+            "pool_info": {
+                "difficulty": difficulty,
+            }
+        }
     except HTTPException:
         raise
     except Exception as e:
@@ -207,27 +302,29 @@ async def get_problem(difficulty: str = "easy", user_id: str = Depends(verify_to
 async def check_answer(req: AnswerRequest, user_id: str = Depends(verify_token)):
     answer = req.answer.upper()
 
-    session = supabase.table("active_sessions").select("*").eq("user_id", user_id).single().execute()
+    session = supabase.table("active_sessions")\
+        .select("*")\
+        .eq("user_id", user_id)\
+        .single()\
+        .execute()
     if not session.data:
         raise HTTPException(status_code=400, detail="No active question")
 
     data = session.data
     correct = data["correct_answer"]
     is_correct = answer == correct
+    problem_id = data.get("problem_id")
 
-    # Update profile stats
-    profile = supabase.table("profiles").select("total_correct,total_attempted").eq("id", user_id).single().execute()
-    current = profile.data or {"total_correct": 0, "total_attempted": 0}
+    # Record answer in user_problem_answers
+    if problem_id:
+        supabase.table("user_problem_answers").upsert({
+            "user_id": user_id,
+            "problem_id": problem_id,
+            "user_answer": answer,
+            "is_correct": is_correct,
+        }).execute()
 
-    new_correct   = current["total_correct"] + (1 if is_correct else 0)
-    new_attempted = current["total_attempted"] + 1
-
-    supabase.table("profiles").update({
-        "total_correct": new_correct,
-        "total_attempted": new_attempted,
-    }).eq("id", user_id).execute()
-
-    # Save to history
+    # Also keep score_history for backward compat / history page
     supabase.table("score_history").insert({
         "user_id": user_id,
         "question": data["question"],
@@ -237,6 +334,17 @@ async def check_answer(req: AnswerRequest, user_id: str = Depends(verify_token))
         "explanation": data["explanation"],
     }).execute()
 
+    # Update profile stats
+    profile = supabase.table("profiles")\
+        .select("total_correct,total_attempted")\
+        .eq("id", user_id).single().execute()
+    current = profile.data or {"total_correct": 0, "total_attempted": 0}
+
+    supabase.table("profiles").update({
+        "total_correct": current["total_correct"] + (1 if is_correct else 0),
+        "total_attempted": current["total_attempted"] + 1,
+    }).eq("id", user_id).execute()
+
     # Clear active session
     supabase.table("active_sessions").delete().eq("user_id", user_id).execute()
 
@@ -244,8 +352,41 @@ async def check_answer(req: AnswerRequest, user_id: str = Depends(verify_token))
         "result": "correct" if is_correct else "incorrect",
         "correct_answer": correct,
         "explanation": data["explanation"],
-        "score": {"correct": new_correct, "total": new_attempted},
+        "score": {
+            "correct": current["total_correct"] + (1 if is_correct else 0),
+            "total": current["total_attempted"] + 1,
+        },
     }
+
+
+@app.get("/pool/status")
+async def pool_status(user_id: str = Depends(verify_token)):
+    """Return pool stats per difficulty — useful for the UI."""
+    result = {}
+    for diff in ["easy", "medium", "hard"]:
+        total_res = supabase.table("problems")\
+            .select("id", count="exact")\
+            .eq("difficulty", diff).execute()
+        total = total_res.count or 0
+
+        answered_res = supabase.table("user_problem_answers")\
+            .select("problem_id")\
+            .eq("user_id", user_id)\
+            .execute()
+        answered_ids = {a["problem_id"] for a in (answered_res.data or [])}
+
+        problems_res = supabase.table("problems")\
+            .select("id")\
+            .eq("difficulty", diff).execute()
+        diff_ids = {p["id"] for p in (problems_res.data or [])}
+
+        solved_in_diff = len(answered_ids & diff_ids)
+        result[diff] = {
+            "total": total,
+            "solved_by_you": solved_in_diff,
+            "remaining": max(0, total - solved_in_diff),
+        }
+    return result
 
 
 @app.get("/leaderboard/data")
