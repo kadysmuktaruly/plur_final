@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,7 +9,7 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
+    :root, [data-theme="dark"] {
       --bg: #0a0a0f;
       --surface: #111118;
       --surface2: #16161f;
@@ -23,6 +23,24 @@
       --gold: #f0c050;
       --silver: #a0aec0;
       --bronze: #c87941;
+      --nav-bg: rgba(10,10,15,0.85);
+    }
+
+    [data-theme="light"] {
+      --bg: #f4f3f8;
+      --surface: #ffffff;
+      --surface2: #f0eff6;
+      --border: #e2e0ec;
+      --accent: #6c58f5;
+      --accent-glow: rgba(108,88,245,0.15);
+      --text: #1a1828;
+      --muted: #7b7893;
+      --success: #1a9e6a;
+      --error: #d93050;
+      --gold: #b8860b;
+      --silver: #718096;
+      --bronze: #a0522d;
+      --nav-bg: rgba(244,243,248,0.9);
     }
 
     html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; }
@@ -37,7 +55,7 @@
 
     nav {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(10,10,15,0.85);
+      background: var(--nav-bg);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
       display: flex; align-items: center; justify-content: space-between;
@@ -139,8 +157,12 @@
     <div class="nav-links">
       <a href="/app" class="nav-link">Practice</a>
       <a href="/leaderboard" class="nav-link active">Leaderboard</a>
+      <a href="/history-page" class="nav-link">History</a>
     </div>
-    <button class="btn-signout" onclick="signOut()">Sign out</button>
+    <div style="display:flex;align-items:center;gap:0.6rem">
+      <button id="themeBtn" onclick="toggleTheme()" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.9rem;transition:all 0.15s;">🌙</button>
+      <button class="btn-signout" onclick="signOut()">Sign out</button>
+    </div>
   </nav>
 
   <div class="page">
@@ -160,7 +182,6 @@
   </div>
 
   <script>
-    // NEW
     const token = localStorage.getItem('sat_token');
     const user = JSON.parse(localStorage.getItem('sat_user') || '{}');
     if (!token) { window.location.replace('/'); throw new Error('redirect'); }
@@ -226,6 +247,18 @@
       } catch (e) {
         document.getElementById('lbCard').innerHTML = `<div class="empty">Failed to load: ${e.message}</div>`;
       }
+    }
+
+    // Theme
+    const savedTheme = localStorage.getItem('sat_theme') || 'dark';
+    applyTheme(savedTheme);
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      document.getElementById('themeBtn').textContent = t === 'dark' ? '🌙' : '☀️';
+      localStorage.setItem('sat_theme', t);
+    }
+    function toggleTheme() {
+      applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
     }
 
     loadLeaderboard();

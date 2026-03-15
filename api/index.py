@@ -76,6 +76,9 @@ async def tutor_app():
 @app.get("/leaderboard")
 async def leaderboard_page():
     return FileResponse(BASE_DIR / "public" / "leaderboard.html")
+@app.get("/history-page")
+async def history_page():
+    return FileResponse(BASE_DIR / "public" / "history.html")
 
 
 # ── auth endpoints ─────────────────────────────────────────────────────────────
@@ -430,6 +433,16 @@ async def check_answer(req: AnswerRequest, user_id: str = Depends(verify_token))
             "is_correct": is_correct,
         }).execute()
 
+    # Get difficulty from the problem record
+    problem_difficulty = ""
+    if problem_id:
+        try:
+            prob = supabase.table("problems").select("difficulty,choices").eq("id", problem_id).single().execute()
+            if prob.data:
+                problem_difficulty = prob.data.get("difficulty", "")
+        except Exception:
+            pass
+
     supabase.table("score_history").insert({
         "user_id": user_id,
         "question": data["question"],
@@ -437,6 +450,7 @@ async def check_answer(req: AnswerRequest, user_id: str = Depends(verify_token))
         "correct_answer": correct,
         "is_correct": is_correct,
         "explanation": data["explanation"],
+        "difficulty": problem_difficulty,
     }).execute()
 
     profile = supabase.table("profiles")\
@@ -460,6 +474,12 @@ async def check_answer(req: AnswerRequest, user_id: str = Depends(verify_token))
             "total": current["total_attempted"] + 1,
         },
     }
+
+
+@app.delete("/session/clear")
+async def clear_session(user_id: str = Depends(verify_token)):
+    supabase.table("active_sessions").delete().eq("user_id", user_id).execute()
+    return {"cleared": True}
 
 
 @app.get("/pool/status")

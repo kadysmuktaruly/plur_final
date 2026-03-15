@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SAT Algebra Tutor — History</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root, [data-theme="dark"] {
+      --bg: #0a0a0f; --surface: #111118; --surface2: #16161f; --border: #1e1e2e;
+      --accent: #7c6aff; --accent-glow: rgba(124,106,255,0.2);
+      --text: #e8e6f0; --muted: #6b6880;
+      --success: #3ecf8e; --error: #ff4d6d; --gold: #f0c050;
+      --nav-bg: rgba(10,10,15,0.88);
+    }
+    [data-theme="light"] {
+      --bg: #f4f3f8; --surface: #ffffff; --surface2: #f0eff6; --border: #e2e0ec;
+      --accent: #6c58f5; --accent-glow: rgba(108,88,245,0.15);
+      --text: #1a1828; --muted: #7b7893;
+      --success: #1a9e6a; --error: #d93050; --gold: #b8860b;
+      --nav-bg: rgba(244,243,248,0.9);
+    }
+
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; transition: background 0.2s, color 0.2s; }
+
+    body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 50% 40% at 10% 10%, rgba(124,106,255,0.04) 0%, transparent 60%); pointer-events: none; }
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--nav-bg); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.85rem 2rem;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 0.6rem; font-weight: 800; font-size: 1rem; letter-spacing: -0.02em; }
+    .nav-dot { width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent), #a78bfa); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; color: white; }
+    .nav-links { display: flex; align-items: center; gap: 0.5rem; }
+    .nav-link { font-family: 'Inconsolata', monospace; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); text-decoration: none; padding: 0.4rem 0.75rem; border-radius: 6px; transition: all 0.15s; }
+    .nav-link:hover { color: var(--text); background: var(--surface); }
+    .nav-link.active { color: var(--accent); }
+    .nav-user { display: flex; align-items: center; gap: 0.6rem; }
+    .user-badge { font-family: 'Inconsolata', monospace; font-size: 0.75rem; color: var(--muted); }
+    .theme-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; transition: all 0.15s; }
+    .theme-btn:hover { border-color: var(--accent); }
+    .btn-signout { font-family: 'Inconsolata', monospace; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.35rem 0.75rem; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
+    .btn-signout:hover { border-color: var(--error); color: var(--error); }
+
+    .page { max-width: 800px; margin: 0 auto; padding: 2.5rem 2rem; }
+
+    /* Stats bar */
+    .stats-bar {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;
+    }
+    @media (max-width: 600px) { .stats-bar { grid-template-columns: repeat(2, 1fr); } }
+
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.25rem; }
+    .stat-label { font-family: 'Inconsolata', monospace; font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+    .stat-val { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.03em; }
+    .stat-val.green { color: var(--success); }
+    .stat-val.red { color: var(--error); }
+    .stat-val.gold { color: var(--gold); }
+    .stat-val.accent { color: var(--accent); }
+
+    /* Filters */
+    .filters { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; }
+    .filter-label { font-family: 'Inconsolata', monospace; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-right: 0.25rem; }
+    .seg-btns { display: flex; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 3px; gap: 3px; }
+    .seg-btn { font-family: 'Inconsolata', monospace; font-size: 0.72rem; padding: 0.3rem 0.7rem; border: none; border-radius: 5px; background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+    .seg-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+
+    /* Page header */
+    .page-eyebrow { font-family: 'Inconsolata', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.4rem; }
+    .page-title { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 1.75rem; }
+
+    /* History items */
+    .history-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .h-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+    .h-item.correct { border-left: 3px solid var(--success); }
+    .h-item.incorrect { border-left: 3px solid var(--error); }
+
+    .h-header {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 1rem 1.25rem; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .h-header:hover { background: var(--surface2); }
+
+    .h-badge {
+      font-family: 'Inconsolata', monospace; font-size: 0.65rem; font-weight: 600;
+      padding: 0.2rem 0.55rem; border-radius: 5px; flex-shrink: 0; text-transform: uppercase;
+    }
+    .h-badge.correct { background: rgba(62,207,142,0.15); color: var(--success); }
+    .h-badge.incorrect { background: rgba(255,77,109,0.12); color: var(--error); }
+
+    .h-diff {
+      font-family: 'Inconsolata', monospace; font-size: 0.6rem; padding: 0.15rem 0.45rem;
+      border-radius: 4px; flex-shrink: 0; text-transform: uppercase;
+    }
+    .h-diff.easy { background: rgba(62,207,142,0.1); color: var(--success); }
+    .h-diff.medium { background: rgba(240,192,80,0.1); color: var(--gold); }
+    .h-diff.hard { background: rgba(255,77,109,0.1); color: var(--error); }
+
+    .h-question { flex: 1; font-size: 0.88rem; font-weight: 600; line-height: 1.4; }
+    .h-meta { font-family: 'Inconsolata', monospace; font-size: 0.7rem; color: var(--muted); flex-shrink: 0; text-align: right; }
+    .h-chevron { color: var(--muted); font-size: 0.75rem; flex-shrink: 0; transition: transform 0.2s; }
+    .h-item.open .h-chevron { transform: rotate(180deg); }
+
+    .h-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }
+    .h-item.open .h-body { display: block; }
+
+    .h-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin: 1rem 0; }
+    @media (max-width: 500px) { .h-choices { grid-template-columns: 1fr; } }
+
+    .h-choice {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid var(--border);
+      font-size: 0.82rem; background: var(--surface2);
+    }
+    .h-choice.user-correct { border-color: var(--success); background: rgba(62,207,142,0.08); color: var(--success); }
+    .h-choice.user-wrong { border-color: var(--error); background: rgba(255,77,109,0.08); color: var(--error); }
+    .h-choice.reveal-correct { border-color: var(--success); }
+    .h-choice-key { font-family: 'Inconsolata', monospace; font-size: 0.7rem; font-weight: 600; width: 1.4rem; height: 1.4rem; border: 1.5px solid currentColor; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; opacity: 0.8; }
+
+    .h-exp-label { font-family: 'Inconsolata', monospace; font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+    .h-exp { font-size: 0.85rem; line-height: 1.7; color: var(--text); opacity: 0.85; white-space: pre-wrap; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
+
+    .h-answer-row { display: flex; gap: 1.5rem; margin-bottom: 0.75rem; font-family: 'Inconsolata', monospace; font-size: 0.75rem; padding-top: 0.75rem; }
+    .h-answer-row span { color: var(--muted); }
+    .h-answer-row strong { margin-left: 0.3rem; }
+
+    /* Loading / empty */
+    .loader-wrap { text-align: center; padding: 4rem; }
+    .spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 1rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loader-txt { font-family: 'Inconsolata', monospace; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+    .empty { font-family: 'Inconsolata', monospace; font-size: 0.85rem; color: var(--muted); text-align: center; padding: 4rem; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-logo"><div class="nav-dot">S</div>SAT Tutor</div>
+    <div class="nav-links">
+      <a href="/app" class="nav-link">Practice</a>
+      <a href="/leaderboard" class="nav-link">Leaderboard</a>
+      <a href="/history-page" class="nav-link active">History</a>
+    </div>
+    <div class="nav-user">
+      <span class="user-badge" id="userBadge"></span>
+      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
+      <button class="btn-signout" onclick="signOut()">Sign out</button>
+    </div>
+  </nav>
+
+  <div class="page">
+    <div class="page-eyebrow">Your progress</div>
+    <div class="page-title">Answer History</div>
+
+    <!-- Stats -->
+    <div class="stats-bar" id="statsBar" style="display:none">
+      <div class="stat-card"><div class="stat-label">Total Attempted</div><div class="stat-val accent" id="statTotal">0</div></div>
+      <div class="stat-card"><div class="stat-label">Correct</div><div class="stat-val green" id="statCorrect">0</div></div>
+      <div class="stat-card"><div class="stat-label">Incorrect</div><div class="stat-val red" id="statWrong">0</div></div>
+      <div class="stat-card"><div class="stat-label">Accuracy</div><div class="stat-val gold" id="statPct">—</div></div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <span class="filter-label">Result:</span>
+      <div class="seg-btns">
+        <button class="seg-btn active" onclick="setFilter('result','all',this)">All</button>
+        <button class="seg-btn" onclick="setFilter('result','correct',this)">✓ Correct</button>
+        <button class="seg-btn" onclick="setFilter('result','incorrect',this)">✗ Incorrect</button>
+      </div>
+    </div>
+
+    <div id="historyContainer">
+      <div class="loader-wrap">
+        <div class="spinner"></div>
+        <div class="loader-txt">Loading history…</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('sat_token');
+    const user = JSON.parse(localStorage.getItem('sat_user') || '{}');
+    if (!token) { window.location.replace('/'); throw new Error('redirect'); }
+    document.getElementById('userBadge').textContent = user.username || user.email || '';
+
+    // Theme
+    const savedTheme = localStorage.getItem('sat_theme') || 'dark';
+    applyTheme(savedTheme);
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      document.getElementById('themeBtn').textContent = t === 'dark' ? '🌙' : '☀️';
+      localStorage.setItem('sat_theme', t);
+    }
+    function toggleTheme() {
+      applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    }
+
+    function signOut() {
+      localStorage.removeItem('sat_token');
+      localStorage.removeItem('sat_user');
+      window.location.href = '/';
+    }
+
+    let allHistory = [];
+    let filterResult = 'all';
+
+    function setFilter(type, val, btn) {
+      if (type === 'result') filterResult = val;
+      btn.closest('.seg-btns').querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderHistory();
+    }
+
+    function renderHistory() {
+      let items = allHistory;
+      if (filterResult === 'correct') items = items.filter(h => h.is_correct);
+      if (filterResult === 'incorrect') items = items.filter(h => !h.is_correct);
+
+      const container = document.getElementById('historyContainer');
+      if (items.length === 0) {
+        container.innerHTML = '<div class="empty">No problems match this filter.</div>';
+        return;
+      }
+
+      container.innerHTML = items.map((h, i) => {
+        const choices = typeof h.choices === 'string' ? JSON.parse(h.choices) : (h.choices || {});
+        const date = new Date(h.answered_at || h.created_at);
+        const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        const diff = h.difficulty || '';
+
+        const choicesHtml = Object.entries(choices).map(([key, text]) => {
+          let cls = '';
+          if (key === h.correct_answer && key === h.user_answer) cls = 'user-correct';
+          else if (key === h.user_answer && !h.is_correct) cls = 'user-wrong';
+          else if (key === h.correct_answer) cls = 'reveal-correct';
+          return `<div class="h-choice ${cls}">
+            <span class="h-choice-key">${key}</span>
+            <span>${text}</span>
+          </div>`;
+        }).join('');
+
+        return `
+          <div class="h-item ${h.is_correct ? 'correct' : 'incorrect'}" id="hi-${i}">
+            <div class="h-header" onclick="toggleItem(${i})">
+              <span class="h-badge ${h.is_correct ? 'correct' : 'incorrect'}">${h.is_correct ? '✓ Correct' : '✗ Wrong'}</span>
+              ${diff ? `<span class="h-diff ${diff}">${diff}</span>` : ''}
+              <span class="h-question">${h.question}</span>
+              <span class="h-meta">${dateStr}<br>${timeStr}</span>
+              <span class="h-chevron">▼</span>
+            </div>
+            <div class="h-body">
+              <div class="h-answer-row">
+                <div><span>Your answer:</span> <strong style="color:${h.is_correct ? 'var(--success)' : 'var(--error)'}">${h.user_answer}</strong></div>
+                <div><span>Correct answer:</span> <strong style="color:var(--success)">${h.correct_answer}</strong></div>
+              </div>
+              ${Object.keys(choices).length > 0 ? `<div class="h-choices">${choicesHtml}</div>` : ''}
+              <div class="h-exp-label">Explanation</div>
+              <div class="h-exp">${h.explanation}</div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function toggleItem(i) {
+      document.getElementById(`hi-${i}`).classList.toggle('open');
+    }
+
+    async function loadHistory() {
+      try {
+        const res = await fetch('/history', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.status === 401) { signOut(); return; }
+        const data = await res.json();
+        allHistory = data.history || [];
+
+        // Stats
+        const total = allHistory.length;
+        const correct = allHistory.filter(h => h.is_correct).length;
+        const wrong = total - correct;
+        const pct = total > 0 ? Math.round((correct / total) * 100) : null;
+
+        if (total > 0) {
+          document.getElementById('statsBar').style.display = 'grid';
+          document.getElementById('statTotal').textContent = total;
+          document.getElementById('statCorrect').textContent = correct;
+          document.getElementById('statWrong').textContent = wrong;
+          document.getElementById('statPct').textContent = pct !== null ? `${pct}%` : '—';
+        }
+
+        if (allHistory.length === 0) {
+          document.getElementById('historyContainer').innerHTML =
+            '<div class="empty">No problems solved yet — go practice!</div>';
+          return;
+        }
+
+        renderHistory();
+      } catch (e) {
+        document.getElementById('historyContainer').innerHTML =
+          `<div class="empty">Failed to load: ${e.message}</div>`;
+      }
+    }
+
+    loadHistory();
+  </script>
+</body>
+</html>

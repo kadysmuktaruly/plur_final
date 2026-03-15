@@ -200,6 +200,7 @@
     <div class="nav-links">
       <a href="/app" class="nav-link active">Practice</a>
       <a href="/leaderboard" class="nav-link">Leaderboard</a>
+      <a href="/history-page" class="nav-link">History</a>
     </div>
     <div class="nav-user">
       <span class="user-badge" id="userBadge"></span>
@@ -516,9 +517,18 @@
         hide('loadingState');
         show('questionState');
         const err = document.getElementById('errMsg');
-        err.textContent = e.message;
+        if (e.message.includes('Answer the current')) {
+          err.innerHTML = e.message + ' <button onclick="clearAndReload()" style="margin-left:0.5rem;background:var(--accent);color:white;border:none;border-radius:4px;padding:0.2rem 0.6rem;cursor:pointer;font-size:0.75rem;font-family:Syne,sans-serif;">Skip it</button>';
+        } else {
+          err.textContent = e.message;
+        }
         err.style.display = 'block';
       }
+    }
+
+    async function clearAndReload() {
+      await fetch('/session/clear', { method: 'DELETE', headers: authHeaders() });
+      loadProblem();
     }
 
     function selectChoice(key, btn) {
