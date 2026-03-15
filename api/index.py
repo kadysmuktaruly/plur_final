@@ -3,12 +3,13 @@ import json
 import asyncio
 from pathlib import Path
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.responses import FileResponse, RedirectResponse, HTMLResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from google import genai
 from supabase import create_client, Client
+import stripe
 
 load_dotenv()
 
@@ -18,6 +19,12 @@ SUPABASE_URL         = os.getenv("SUPABASE_URL")
 SUPABASE_ANON_KEY    = os.getenv("SUPABASE_ANON_KEY")
 SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
 SITE_URL             = os.getenv("SITE_URL", "http://127.0.0.1:8000")
+STRIPE_SECRET_KEY    = os.getenv("STRIPE_SECRET_KEY", "")
+STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+STRIPE_PRICE_ID      = os.getenv("STRIPE_PRICE_ID", "")  # monthly price ID
+
+if STRIPE_SECRET_KEY:
+    stripe.api_key = STRIPE_SECRET_KEY
 
 for name, val in [
     ("GEMINI_API_KEY", GEMINI_API_KEY),
@@ -267,6 +274,87 @@ async def google_profile(user_id: str = Depends(verify_token)):
     return {"id": user_id, "email": email, "username": username}
 
 
+# ── subscription helpers ──────────────────────────────────────────────────────
+
+FREE_PROBLEM_LIMIT = 5
+
+def is_user_pro(user_id: str) -> bool:
+    try:
+        profile = supabase.table("profiles").select("is_pro").eq("id", user_id).single().execute()
+        return bool(profile.data and profile.data.get("is_pro"))
+    except Exception:
+        return False
+
+def get_total_attempted(user_id: str) -> int:
+    try:
+        profile = supabase.table("profiles").select("total_attempted").eq("id", user_id).single().execute()
+        return int(profile.data.get("total_attempted", 0)) if profile.data else 0
+    except Exception:
+        return 0
+
+
+@app.post("/stripe/create-checkout")
+async def create_checkout(user_id: str = Depends(verify_token)):
+    try:
+        # Get user email
+        user_resp = supabase.auth.admin.get_user_by_id(user_id)
+        email = user_resp.user.email if user_resp.user else ""
+
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            mode="subscription",
+            line_items=[{"price": STRIPE_PRICE_ID, "quantity": 1}],
+            customer_email=email,
+            success_url=SITE_URL + "/app?subscribed=1",
+            cancel_url=SITE_URL + "/app?cancelled=1",
+            metadata={"user_id": user_id},
+        )
+        return {"url": session.url}
+    except Exception as e:
+        print(f"STRIPE ERROR: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/stripe/webhook")
+async def stripe_webhook(request: Request):
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature", "")
+
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid webhook signature")
+
+    if event["type"] == "checkout.session.completed":
+        session = event["data"]["object"]
+        user_id = session.get("metadata", {}).get("user_id")
+        stripe_customer_id = session.get("customer")
+        if user_id:
+            supabase.table("profiles").update({
+                "is_pro": True,
+                "stripe_customer_id": stripe_customer_id,
+            }).eq("id", user_id).execute()
+
+    elif event["type"] in ("customer.subscription.deleted", "customer.subscription.paused"):
+        customer_id = event["data"]["object"].get("customer")
+        if customer_id:
+            supabase.table("profiles").update({"is_pro": False})                .eq("stripe_customer_id", customer_id).execute()
+
+    return {"ok": True}
+
+
+@app.get("/subscription/status")
+async def subscription_status(user_id: str = Depends(verify_token)):
+    pro = is_user_pro(user_id)
+    attempted = get_total_attempted(user_id)
+    return {
+        "is_pro": pro,
+        "total_attempted": attempted,
+        "free_limit": FREE_PROBLEM_LIMIT,
+        "problems_remaining_free": max(0, FREE_PROBLEM_LIMIT - attempted) if not pro else None,
+    }
+
+
 # ── problem pool logic ─────────────────────────────────────────────────────────
 
 async def generate_problems_batch(difficulty: str, count: int) -> list:
@@ -397,6 +485,12 @@ async def get_problem(difficulty: str = "easy", user_id: str = Depends(verify_to
             .execute()
         if existing.data:
             raise HTTPException(status_code=400, detail="Answer the current question first.")
+
+        # Paywall check
+        if not is_user_pro(user_id):
+            attempted = get_total_attempted(user_id)
+            if attempted >= FREE_PROBLEM_LIMIT:
+                raise HTTPException(status_code=402, detail="free_limit_reached")
 
         await ensure_pool_for_user(user_id, difficulty)
 

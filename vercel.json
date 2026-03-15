@@ -48,6 +48,14 @@
       "dest": "/public/history.html"
     },
     {
+      "src": "/subscription/status",
+      "dest": "api/index.py"
+    },
+    {
+      "src": "/stripe/(.*)",
+      "dest": "api/index.py"
+    },
+    {
       "src": "/skip",
       "dest": "api/index.py"
     },

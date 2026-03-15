@@ -197,6 +197,42 @@
     .welcome h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; }
     .welcome p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; max-width: 360px; margin: 0 auto 1.75rem; }
 
+    /* Paywall modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 999; backdrop-filter: blur(4px);
+      animation: fadein 0.2s ease;
+    }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 18px; padding: 2.5rem; max-width: 420px; width: 90%;
+      text-align: center; position: relative;
+    }
+    .modal-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    .modal-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+    .modal-sub { color: var(--muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.5rem; }
+    .modal-price {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem;
+    }
+    .modal-price-amount { font-size: 2rem; font-weight: 800; color: var(--accent); }
+    .modal-price-period { font-family: 'Inconsolata', monospace; font-size: 0.75rem; color: var(--muted); }
+    .modal-features { text-align: left; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .modal-feature { font-size: 0.85rem; display: flex; align-items: center; gap: 0.6rem; }
+    .modal-feature::before { content: '✓'; color: var(--success); font-weight: 700; flex-shrink: 0; }
+    .btn-subscribe {
+      width: 100%; background: var(--accent); color: white; border: none;
+      border-radius: 10px; padding: 0.9rem; font-family: 'Syne', sans-serif;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      box-shadow: 0 4px 20px var(--accent-glow); transition: all 0.2s;
+    }
+    .btn-subscribe:hover { opacity: 0.9; transform: translateY(-1px); }
+    .modal-cancel { font-family: 'Inconsolata', monospace; font-size: 0.72rem; color: var(--muted); margin-top: 0.75rem; cursor: pointer; }
+    .modal-cancel:hover { color: var(--text); }
+    .pro-badge { font-family: 'Inconsolata', monospace; font-size: 0.6rem; background: linear-gradient(135deg, var(--accent), #a78bfa); color: white; padding: 0.15rem 0.5rem; border-radius: 4px; margin-left: 0.4rem; vertical-align: middle; }
+    .free-counter { font-family: 'Inconsolata', monospace; font-size: 0.72rem; color: var(--muted); margin-left: 0.5rem; }
+
     /* Error */
     .err { font-family: 'Inconsolata', monospace; font-size: 0.78rem; color: var(--error); background: rgba(255,77,109,0.08); border: 1px solid rgba(255,77,109,0.2); padding: 0.6rem 0.9rem; border-radius: 6px; margin-top: 0.75rem; display: none; }
   </style>
@@ -305,6 +341,27 @@
     </aside>
   </div>
 
+  <!-- Paywall Modal -->
+  <div id="paywallModal" class="modal-overlay" style="display:none">
+    <div class="modal">
+      <div class="modal-icon">🔒</div>
+      <div class="modal-title">You've used your 5 free problems</div>
+      <div class="modal-sub">Upgrade to SAT Tutor Pro to keep practicing with unlimited AI-generated problems.</div>
+      <div class="modal-price">
+        <div class="modal-price-amount">$4.99</div>
+        <div class="modal-price-period">per month · cancel anytime</div>
+      </div>
+      <div class="modal-features">
+        <div class="modal-feature">Unlimited practice problems</div>
+        <div class="modal-feature">All difficulty levels</div>
+        <div class="modal-feature">Full answer history & explanations</div>
+        <div class="modal-feature">Leaderboard access</div>
+      </div>
+      <button class="btn-subscribe" onclick="startCheckout()">Upgrade to Pro →</button>
+      <div class="modal-cancel" onclick="document.getElementById('paywallModal').style.display='none'">Maybe later</div>
+    </div>
+  </div>
+
   <script>
     // ── Auth ──
     const token = localStorage.getItem('sat_token');
@@ -333,6 +390,8 @@
     let sessionCorrect = 0;
     let sessionTotal = 0;
     let difficulty = 'easy';
+    let isPro = false;
+    let totalAttempted = 0;
     let timerSeconds = 0;
     let timerInterval = null;
     let timeLeft = 0;
@@ -341,6 +400,14 @@
     // Sync in-question difficulty buttons on load
     syncDiffBtns();
     setTimeout(loadPoolStatus, 100);
+    checkSubscription();
+
+    // Handle return from Stripe
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('subscribed') === '1') {
+      setTimeout(() => checkSubscription(), 1500); // give webhook time
+      window.history.replaceState({}, '', '/app');
+    }
 
     function authHeaders() {
       return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
@@ -353,6 +420,44 @@
     }
 
     function show(id, d='block') { document.getElementById(id).style.display = d; }
+
+    // ── Subscription ──
+    async function checkSubscription() {
+      try {
+        const res = await fetch('/subscription/status', { headers: authHeaders() });
+        if (!res.ok) return;
+        const data = await res.json();
+        isPro = data.is_pro;
+        totalAttempted = data.total_attempted;
+        updateProBadge();
+      } catch(_) {}
+    }
+
+    function updateProBadge() {
+      const badge = document.getElementById('userBadge');
+      if (isPro) {
+        badge.innerHTML = (user.username || user.email || '') + '<span class="pro-badge">PRO</span>';
+      } else {
+        const remaining = Math.max(0, 5 - totalAttempted);
+        badge.innerHTML = (user.username || user.email || '') +
+          (remaining > 0 ? `<span class="free-counter">${remaining} free left</span>` : '<span class="free-counter" style="color:var(--error)">limit reached</span>');
+      }
+    }
+
+    async function startCheckout() {
+      const btn = document.querySelector('.btn-subscribe');
+      btn.textContent = 'Redirecting…'; btn.disabled = true;
+      try {
+        const res = await fetch('/stripe/create-checkout', {
+          method: 'POST', headers: authHeaders()
+        });
+        const data = await res.json();
+        if (data.url) window.location.href = data.url;
+        else throw new Error('No URL');
+      } catch(e) {
+        btn.textContent = 'Upgrade to Pro →'; btn.disabled = false;
+      }
+    }
     function hide(id) { document.getElementById(id).style.display = 'none'; }
 
     // ── Difficulty ──
@@ -538,6 +643,12 @@
         // If there's already an active question, recover it
         if (data.detail === 'Answer the current question first.') {
           await recoverActiveSession();
+          return;
+        }
+        if (res.status === 402 || data.detail === 'free_limit_reached') {
+          hide('loadingState');
+          show('welcomeState');
+          document.getElementById('paywallModal').style.display = 'flex';
           return;
         }
         if (data.detail) throw new Error(data.detail);

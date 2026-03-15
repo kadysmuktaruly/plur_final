@@ -1,18 +1,11 @@
--- Run this in your Supabase SQL Editor (Dashboard → SQL Editor → New Query)
+-- ═══════════════════════════════════════════════════════════
+-- RUN THIS in Supabase → SQL Editor → New Query
+-- ═══════════════════════════════════════════════════════════
 
--- 1. Profiles table (extends Supabase auth.users)
-create table if not exists public.profiles (
-  id uuid primary key references auth.users(id) on delete cascade,
-  username text unique not null,
-  total_correct integer default 0,
-  total_attempted integer default 0,
-  created_at timestamptz default now()
-);
-
--- 2. Active sessions (one row per user while they have an unanswered question)
-create table if not exists public.active_sessions (
+-- 1. Shared problem pool
+create table if not exists public.problems (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid unique references auth.users(id) on delete cascade,
+  difficulty text not null check (difficulty in ('easy','medium','hard')),
   question text not null,
   choices jsonb not null,
   correct_answer text not null,
@@ -20,32 +13,41 @@ create table if not exists public.active_sessions (
   created_at timestamptz default now()
 );
 
--- 3. Score history (full log of every answered question)
-create table if not exists public.score_history (
+-- 2. Track which user has answered which problem
+create table if not exists public.user_problem_answers (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade,
-  question text not null,
+  problem_id uuid references public.problems(id) on delete cascade,
   user_answer text not null,
-  correct_answer text not null,
   is_correct boolean not null,
-  explanation text not null,
-  created_at timestamptz default now()
+  answered_at timestamptz default now(),
+  unique(user_id, problem_id)
 );
 
--- 4. Row Level Security — users can only see/edit their own data
-alter table public.profiles enable row level security;
-alter table public.active_sessions enable row level security;
-alter table public.score_history enable row level security;
+-- 3. RLS
+alter table public.problems enable row level security;
+alter table public.user_problem_answers enable row level security;
 
--- Profiles: readable by anyone (for leaderboard), writable only by owner
-create policy "profiles_public_read" on public.profiles for select using (true);
-create policy "profiles_self_write" on public.profiles for all using (auth.uid() = id);
+-- Problems: everyone can read, only service role writes
+create policy "problems_public_read" on public.problems for select using (true);
 
--- Active sessions: only owner
-create policy "sessions_self" on public.active_sessions for all using (auth.uid() = user_id);
+-- Answers: only owner can read/write their own
+create policy "answers_self" on public.user_problem_answers for all using (auth.uid() = user_id);
 
--- History: only owner
-create policy "history_self" on public.score_history for all using (auth.uid() = user_id);
+-- 4. Useful indexes
+create index if not exists problems_difficulty_idx on public.problems(difficulty);
+create index if not exists answers_user_idx on public.user_problem_answers(user_id);
+create index if not exists answers_problem_idx on public.user_problem_answers(problem_id);
 
--- 5. Allow service role to bypass RLS (needed for backend inserts)
--- (This is automatic for the service role key — no action needed)
+-- ── Add problem_id to active_sessions (run if table already exists) ──
+alter table public.active_sessions
+  add column if not exists problem_id uuid references public.problems(id) on delete set null;
+
+-- ── Add difficulty to score_history (run if table already exists) ──
+alter table public.score_history
+  add column if not exists difficulty text default '';
+
+-- ── Add subscription fields to profiles ──
+alter table public.profiles
+  add column if not exists is_pro boolean default false,
+  add column if not exists stripe_customer_id text default null;
