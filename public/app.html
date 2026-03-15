@@ -4,6 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SAT Algebra Tutor — Practice</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
   <style>
@@ -439,6 +446,49 @@
         </div>`).join('');
     }
 
+    // ── Recover existing active session ──
+    async function recoverActiveSession() {
+      try {
+        const res = await fetch('/active-session', { headers: authHeaders() });
+        if (res.status === 401) { signOut(); return; }
+        const data = await res.json();
+        if (!data.question) { 
+          // No session found, clear and show welcome
+          show('welcomeState');
+          hide('loadingState');
+          return;
+        }
+
+        hide('loadingState');
+        show('questionState');
+        syncDiffBtns();
+
+        document.getElementById('qText').textContent = data.question;
+        document.getElementById('resultPanel').style.display = 'none';
+        document.getElementById('resultPanel').className = 'result';
+        document.getElementById('nextBtn').style.display = 'none';
+        document.getElementById('submitBtn').disabled = true;
+        document.getElementById('errMsg').style.display = 'none';
+        hide('timeoutBanner');
+
+        const container = document.getElementById('choices');
+        container.innerHTML = '';
+        for (const [key, text] of Object.entries(data.choices)) {
+          const btn = document.createElement('button');
+          btn.className = 'choice';
+          btn.innerHTML = `<span class="choice-key">${key}</span><span>${text}</span>`;
+          btn.onclick = () => selectChoice(key, btn);
+          container.appendChild(btn);
+        }
+
+        if (window.MathJax) MathJax.typesetPromise([document.getElementById('questionState')]);
+        startTimer();
+      } catch (e) {
+        hide('loadingState');
+        show('welcomeState');
+      }
+    }
+
     // ── Pool status ──
     async function loadPoolStatus() {
       try {
@@ -460,6 +510,14 @@
       } catch (_) {}
     }
 
+    // ── Skip question ──
+    async function skipQuestion() {
+      try {
+        await fetch('/skip', { method: 'POST', headers: authHeaders() });
+        loadProblem();
+      } catch(e) { loadProblem(); }
+    }
+
     // ── Load problem ──
     async function loadProblem() {
       stopTimer();
@@ -476,6 +534,12 @@
         const res = await fetch(`/problem?difficulty=${difficulty}`, { headers: authHeaders() });
         if (res.status === 401) { signOut(); return; }
         const data = await res.json();
+
+        // If there's already an active question, recover it
+        if (data.detail === 'Answer the current question first.') {
+          await recoverActiveSession();
+          return;
+        }
         if (data.detail) throw new Error(data.detail);
 
         // Pool exhausted for this user
@@ -513,6 +577,8 @@
         }
 
         startTimer();
+        // Typeset math after DOM update
+        if (window.MathJax) MathJax.typesetPromise([document.getElementById('questionState')]);
       } catch (e) {
         hide('loadingState');
         show('questionState');

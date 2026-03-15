@@ -76,6 +76,7 @@ async def tutor_app():
 @app.get("/leaderboard")
 async def leaderboard_page():
     return FileResponse(BASE_DIR / "public" / "leaderboard.html")
+
 @app.get("/history-page")
 async def history_page():
     return FileResponse(BASE_DIR / "public" / "history.html")
@@ -280,14 +281,16 @@ async def generate_problems_batch(difficulty: str, count: int) -> list:
 Generate exactly {count} unique SAT-style algebra problems at {difficulty.upper()} difficulty.
 Difficulty guide: {guide}
 
-Return ONLY a valid JSON array (no markdown, no extra text):
+Return ONLY a valid JSON array (no markdown, no extra text).
+IMPORTANT: Format ALL math expressions using LaTeX inline notation with $ delimiters.
+Examples: use $x^2$ not x^2, use $\\frac{{a}}{{b}}$ not a/b for fractions, use $\\sqrt{{x}}$ not sqrt(x), use $ax^2 + bx + c = 0$ for equations.
 
 [
   {{
     "question": "...",
-    "choices": {{"A":"...","B":"...","C":"...","D":"..."}},
+    "choices": {{"A":"$...$","B":"$...$","C":"$...$","D":"$...$"}},
     "correct_answer": "A",
-    "explanation": "step-by-step explanation"
+    "explanation": "step-by-step explanation using $ for math"
   }},
   ...
 ]
@@ -365,6 +368,26 @@ def get_next_problem_for_user(user_id: str, difficulty: str):
 
 
 # ── problem endpoints ──────────────────────────────────────────────────────────
+@app.get("/active-session")
+async def get_active_session(user_id: str = Depends(verify_token)):
+    """Return the user's current unanswered question if one exists."""
+    session = supabase.table("active_sessions")        .select("*")        .eq("user_id", user_id)        .execute()
+    if not session.data:
+        return {"question": None}
+    data = session.data[0]
+    choices = data["choices"]
+    if isinstance(choices, str):
+        choices = json.loads(choices)
+    return {"question": data["question"], "choices": choices}
+
+
+@app.post("/skip")
+async def skip_question(user_id: str = Depends(verify_token)):
+    """Delete the active session so user can get a fresh question."""
+    supabase.table("active_sessions").delete().eq("user_id", user_id).execute()
+    return {"ok": True}
+
+
 @app.get("/problem")
 async def get_problem(difficulty: str = "easy", user_id: str = Depends(verify_token)):
     try:

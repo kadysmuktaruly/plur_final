@@ -48,6 +48,14 @@
       "dest": "/public/history.html"
     },
     {
+      "src": "/skip",
+      "dest": "api/index.py"
+    },
+    {
+      "src": "/active-session",
+      "dest": "api/index.py"
+    },
+    {
       "src": "/app",
       "dest": "/public/app.html"
     },
