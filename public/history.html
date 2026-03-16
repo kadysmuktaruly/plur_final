@@ -4,27 +4,50 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SAT Algebra Tutor — History</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root, [data-theme="dark"] {
-      --bg: #0a0a0f; --surface: #111118; --surface2: #16161f; --border: #1e1e2e;
-      --accent: #7c6aff; --accent-glow: rgba(124,106,255,0.2);
-      --text: #e8e6f0; --muted: #6b6880;
-      --success: #3ecf8e; --error: #ff4d6d; --gold: #f0c050;
-      --nav-bg: rgba(10,10,15,0.88);
+        :root,     :root, [data-theme="dark"] {
+      --bg: #080810;
+      --surface: #0e0e1a;
+      --surface2: #13131f;
+      --border: #1c1c2e;
+      --accent: #6366f1;
+      --accent2: #8b5cf6;
+      --accent-glow: rgba(99,102,241,0.25);
+      --text: #eeedf5;
+      --muted: #6b6880;
+      --success: #22d3a5;
+      --error: #f43f6e;
+      --gold: #fbbf24;
+      --nav-bg: rgba(8,8,16,0.9);
     }
-    [data-theme="light"] {
-      --bg: #f4f3f8; --surface: #ffffff; --surface2: #f0eff6; --border: #e2e0ec;
-      --accent: #6c58f5; --accent-glow: rgba(108,88,245,0.15);
-      --text: #1a1828; --muted: #7b7893;
-      --success: #1a9e6a; --error: #d93050; --gold: #b8860b;
-      --nav-bg: rgba(244,243,248,0.9);
+        [data-theme="light"] {
+      --bg: #f1f0f7;
+      --surface: #ffffff;
+      --surface2: #eceaf6;
+      --border: #dddbe8;
+      --accent: #6366f1;
+      --accent2: #8b5cf6;
+      --accent-glow: rgba(99,102,241,0.15);
+      --text: #16151f;
+      --muted: #7b7893;
+      --success: #059669;
+      --error: #e11d48;
+      --gold: #d97706;
+      --nav-bg: rgba(241,240,247,0.92);
     }
 
-    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; transition: background 0.2s, color 0.2s; }
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; transition: background 0.2s, color 0.2s; }
 
     body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 50% 40% at 10% 10%, rgba(124,106,255,0.04) 0%, transparent 60%); pointer-events: none; }
 
@@ -35,17 +58,17 @@
       display: flex; align-items: center; justify-content: space-between;
       padding: 0.85rem 2rem;
     }
-    .nav-logo { display: flex; align-items: center; gap: 0.6rem; font-weight: 800; font-size: 1rem; letter-spacing: -0.02em; }
-    .nav-dot { width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent), #a78bfa); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; color: white; }
+    .nav-logo { display: flex; align-items: center; gap: 0.6rem; font-weight: 800; font-size: 0.9rem; letter-spacing: 0.06em; text-transform: uppercase; font-family: 'Outfit', sans-serif; }
+        .nav-dot { width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; color: white; font-family: 'Outfit', sans-serif; }
     .nav-links { display: flex; align-items: center; gap: 0.5rem; }
-    .nav-link { font-family: 'Inconsolata', monospace; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); text-decoration: none; padding: 0.4rem 0.75rem; border-radius: 6px; transition: all 0.15s; }
+    .nav-link { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-decoration: none; padding: 0.4rem 0.75rem; border-radius: 6px; transition: all 0.15s; }
     .nav-link:hover { color: var(--text); background: var(--surface); }
     .nav-link.active { color: var(--accent); }
     .nav-user { display: flex; align-items: center; gap: 0.6rem; }
-    .user-badge { font-family: 'Inconsolata', monospace; font-size: 0.75rem; color: var(--muted); }
+    .user-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--muted); }
     .theme-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; transition: all 0.15s; }
     .theme-btn:hover { border-color: var(--accent); }
-    .btn-signout { font-family: 'Inconsolata', monospace; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.35rem 0.75rem; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
+    .btn-signout { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.35rem 0.8rem; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
     .btn-signout:hover { border-color: var(--error); color: var(--error); }
 
     .page { max-width: 800px; margin: 0 auto; padding: 2.5rem 2rem; }
@@ -57,8 +80,8 @@
     @media (max-width: 600px) { .stats-bar { grid-template-columns: repeat(2, 1fr); } }
 
     .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.25rem; }
-    .stat-label { font-family: 'Inconsolata', monospace; font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
-    .stat-val { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.03em; }
+    .stat-label { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+    .stat-val { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 800; letter-spacing: -0.04em; }
     .stat-val.green { color: var(--success); }
     .stat-val.red { color: var(--error); }
     .stat-val.gold { color: var(--gold); }
@@ -66,14 +89,14 @@
 
     /* Filters */
     .filters { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; }
-    .filter-label { font-family: 'Inconsolata', monospace; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-right: 0.25rem; }
+    .filter-label { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-right: 0.25rem; }
     .seg-btns { display: flex; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 3px; gap: 3px; }
-    .seg-btn { font-family: 'Inconsolata', monospace; font-size: 0.72rem; padding: 0.3rem 0.7rem; border: none; border-radius: 5px; background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+    .seg-btn { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; padding: 0.3rem 0.7rem; border: none; border-radius: 5px; background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; }
     .seg-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
 
     /* Page header */
-    .page-eyebrow { font-family: 'Inconsolata', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.4rem; }
-    .page-title { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 1.75rem; }
+    .page-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.4rem; }
+    .page-title { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 900; letter-spacing: -0.04em; text-transform: uppercase; margin-bottom: 1.75rem; }
 
     /* History items */
     .history-list { display: flex; flex-direction: column; gap: 0.75rem; }
@@ -95,23 +118,20 @@
     }
     .h-header:hover { background: var(--surface2); }
 
-    .h-badge {
-      font-family: 'Inconsolata', monospace; font-size: 0.65rem; font-weight: 600;
-      padding: 0.2rem 0.55rem; border-radius: 5px; flex-shrink: 0; text-transform: uppercase;
-    }
+    .h-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 5px; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.05em; }
     .h-badge.correct { background: rgba(62,207,142,0.15); color: var(--success); }
     .h-badge.incorrect { background: rgba(255,77,109,0.12); color: var(--error); }
 
     .h-diff {
-      font-family: 'Inconsolata', monospace; font-size: 0.6rem; padding: 0.15rem 0.45rem;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; padding: 0.15rem 0.45rem;
       border-radius: 4px; flex-shrink: 0; text-transform: uppercase;
     }
     .h-diff.easy { background: rgba(62,207,142,0.1); color: var(--success); }
     .h-diff.medium { background: rgba(240,192,80,0.1); color: var(--gold); }
     .h-diff.hard { background: rgba(255,77,109,0.1); color: var(--error); }
 
-    .h-question { flex: 1; font-size: 0.88rem; font-weight: 600; line-height: 1.4; }
-    .h-meta { font-family: 'Inconsolata', monospace; font-size: 0.7rem; color: var(--muted); flex-shrink: 0; text-align: right; }
+    .h-question { flex: 1; font-family: 'Space Grotesk', sans-serif; font-size: 0.88rem; font-weight: 600; line-height: 1.4; }
+    .h-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--muted); flex-shrink: 0; text-align: right; }
     .h-chevron { color: var(--muted); font-size: 0.75rem; flex-shrink: 0; transition: transform 0.2s; }
     .h-item.open .h-chevron { transform: rotate(180deg); }
 
@@ -129,12 +149,12 @@
     .h-choice.user-correct { border-color: var(--success); background: rgba(62,207,142,0.08); color: var(--success); }
     .h-choice.user-wrong { border-color: var(--error); background: rgba(255,77,109,0.08); color: var(--error); }
     .h-choice.reveal-correct { border-color: var(--success); }
-    .h-choice-key { font-family: 'Inconsolata', monospace; font-size: 0.7rem; font-weight: 600; width: 1.4rem; height: 1.4rem; border: 1.5px solid currentColor; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; opacity: 0.8; }
+    .h-choice-key { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 600; width: 1.4rem; height: 1.4rem; border: 1.5px solid currentColor; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; opacity: 0.8; }
 
-    .h-exp-label { font-family: 'Inconsolata', monospace; font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
-    .h-exp { font-size: 0.85rem; line-height: 1.7; color: var(--text); opacity: 0.85; white-space: pre-wrap; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
+    .h-exp-label { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+    .h-exp { font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; line-height: 1.7; color: var(--text); opacity: 0.85; white-space: pre-wrap; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; }
 
-    .h-answer-row { display: flex; gap: 1.5rem; margin-bottom: 0.75rem; font-family: 'Inconsolata', monospace; font-size: 0.75rem; padding-top: 0.75rem; }
+    .h-answer-row { display: flex; gap: 1.5rem; margin-bottom: 0.75rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; padding-top: 0.75rem; }
     .h-answer-row span { color: var(--muted); }
     .h-answer-row strong { margin-left: 0.3rem; }
 
@@ -142,8 +162,8 @@
     .loader-wrap { text-align: center; padding: 4rem; }
     .spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 1rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .loader-txt { font-family: 'Inconsolata', monospace; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
-    .empty { font-family: 'Inconsolata', monospace; font-size: 0.85rem; color: var(--muted); text-align: center; padding: 4rem; }
+    .loader-txt { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+    .empty { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--muted); text-align: center; padding: 4rem; }
   </style>
 </head>
 <body>
@@ -277,7 +297,11 @@
     }
 
     function toggleItem(i) {
-      document.getElementById(`hi-${i}`).classList.toggle('open');
+      const el = document.getElementById(`hi-${i}`);
+      el.classList.toggle('open');
+      if (el.classList.contains('open') && window.MathJax) {
+        MathJax.typesetPromise([el]);
+      }
     }
 
     async function loadHistory() {
@@ -310,6 +334,7 @@
         }
 
         renderHistory();
+        setTimeout(() => { if (window.MathJax) MathJax.typesetPromise(); }, 100);
       } catch (e) {
         document.getElementById('historyContainer').innerHTML =
           `<div class="empty">Failed to load: ${e.message}</div>`;

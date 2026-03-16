@@ -12,6 +12,10 @@
     {
       "src": "public/history.html",
       "use": "@vercel/static"
+    },
+    {
+      "src": "public/login.html",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -62,6 +66,10 @@
     {
       "src": "/active-session",
       "dest": "api/index.py"
+    },
+    {
+      "src": "/login",
+      "dest": "/public/login.html"
     },
     {
       "src": "/app",

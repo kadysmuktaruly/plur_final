@@ -3,404 +3,779 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SAT Algebra Tutor — Sign In</title>
+  <title>SAT Algebra Tutor — Ace the SAT with AI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0a0a0f;
-      --surface: #111118;
-      --border: #1e1e2e;
-      --accent: #7c6aff;
-      --accent-glow: rgba(124,106,255,0.25);
-      --text: #e8e6f0;
-      --muted: #6b6880;
-      --success: #3ecf8e;
-      --error: #ff4d6d;
+      --bg: #07070f;
+      --bg2: #0c0c18;
+      --surface: #0f0f1e;
+      --surface2: #141428;
+      --border: #1e1e35;
+      --border2: #2a2a45;
+      --accent: #6366f1;
+      --accent2: #8b5cf6;
+      --accent3: #a78bfa;
+      --accent-glow: rgba(99,102,241,0.3);
+      --success: #10d9a0;
+      --gold: #f59e0b;
+      --error: #f43f6e;
+      --text: #eeedf5;
+      --muted: #7b7a95;
+      --muted2: #4a4a6a;
     }
 
-    html, body {
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Syne', sans-serif;
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; overflow-x: hidden; }
+
+    /* ── CANVAS BG ── */
+    #starfield { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+    /* ── NAV ── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(7,7,15,0.85); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2.5rem; height: 64px;
     }
-
-    /* animated bg */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 60% 50% at 20% 20%, rgba(124,106,255,0.08) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 60% at 80% 80%, rgba(62,207,142,0.05) 0%, transparent 60%);
-      pointer-events: none;
+    .nav-logo { display: flex; align-items: center; gap: 0.65rem; text-decoration: none; }
+    .nav-logo-mark {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 9px; display: flex; align-items: center; justify-content: center;
+      font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 1rem; color: white;
     }
-
-    .grid-bg {
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(124,106,255,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(124,106,255,0.04) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-    }
-
-    .page {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
-      position: relative;
-      z-index: 1;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 420px;
-    }
-
-    /* Logo */
-    .logo {
-      text-align: center;
-      margin-bottom: 2.5rem;
-    }
-
-    .logo-mark {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 52px;
-      height: 52px;
-      background: linear-gradient(135deg, var(--accent), #a78bfa);
-      border-radius: 14px;
-      font-size: 1.4rem;
-      font-weight: 800;
-      margin-bottom: 1rem;
-      box-shadow: 0 0 30px var(--accent-glow);
-    }
-
-    .logo h1 {
-      font-size: 1.5rem;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-    }
-
-    .logo p {
-      font-family: 'Inconsolata', monospace;
-      font-size: 0.75rem;
-      color: var(--muted);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin-top: 0.25rem;
-    }
-
-    /* Card */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2rem;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-    }
-
-    /* Tabs */
-    .tabs {
-      display: flex;
-      background: var(--bg);
-      border-radius: 10px;
-      padding: 4px;
-      margin-bottom: 1.75rem;
-      gap: 4px;
-    }
-
-    .tab {
-      flex: 1;
-      padding: 0.6rem;
-      border: none;
-      background: transparent;
-      color: var(--muted);
-      font-family: 'Syne', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 600;
-      border-radius: 7px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .tab.active {
-      background: var(--surface);
-      color: var(--text);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
-    }
-
-    /* Form */
-    .form { display: none; flex-direction: column; gap: 1rem; }
-    .form.active { display: flex; }
-
-    .field { display: flex; flex-direction: column; gap: 0.4rem; }
-
-    label {
-      font-family: 'Inconsolata', monospace;
-      font-size: 0.7rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    input {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.75rem 1rem;
-      color: var(--text);
-      font-family: 'Syne', sans-serif;
-      font-size: 0.9rem;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-glow);
-    }
-
-    /* Buttons */
-    .btn-primary {
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 0.8rem;
-      font-family: 'Syne', sans-serif;
-      font-size: 0.9rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-      margin-top: 0.25rem;
+    .nav-logo-text { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 0.88rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
+    .nav-links { display: flex; align-items: center; gap: 0.25rem; }
+    .nav-link { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500; color: var(--muted); text-decoration: none; padding: 0.4rem 0.8rem; border-radius: 7px; transition: all 0.15s; }
+    .nav-link:hover { color: var(--text); background: var(--surface2); }
+    .nav-cta {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white; border: none; border-radius: 10px; padding: 0.5rem 1.3rem;
+      font-family: 'Outfit', sans-serif; font-size: 0.82rem; font-weight: 700;
+      letter-spacing: 0.03em; cursor: pointer; text-decoration: none; transition: all 0.2s;
       box-shadow: 0 4px 20px var(--accent-glow);
     }
+    .nav-cta:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 8px 30px var(--accent-glow); }
+    @media (max-width: 640px) { .nav-links { display: none; } }
 
-    .btn-primary:hover:not(:disabled) {
-      background: #6a58f0;
-      transform: translateY(-1px);
-      box-shadow: 0 6px 24px var(--accent-glow);
+    /* ── HERO ── */
+    .hero {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 8rem 2rem 5rem;
     }
 
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      color: var(--muted);
-      font-size: 0.75rem;
-      font-family: 'Inconsolata', monospace;
-      margin: 0.25rem 0;
-    }
-
-    .divider::before, .divider::after {
+    /* Grid overlay */
+    .hero::before {
       content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none;
+    }
+    /* Fade grid at edges */
+    .hero::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 50%, transparent 40%, var(--bg) 100%);
+      pointer-events: none;
     }
 
-    .btn-google {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.75rem;
+    .hero-content { position: relative; z-index: 2; }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.25);
+      color: var(--accent3); border-radius: 100px;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 0.4rem 1rem; margin-bottom: 2rem;
+      animation: fadeUp 0.5s ease forwards;
+    }
+    .badge-dot { width: 6px; height: 6px; background: var(--success); border-radius: 50%; animation: pulse-dot 2s infinite; }
+    @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+
+    .hero-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(3.5rem, 8vw, 7rem);
+      font-weight: 900;
+      line-height: 0.95;
+      letter-spacing: -0.05em;
       color: var(--text);
-      font-family: 'Syne', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
+      margin-bottom: 1.5rem;
+      max-width: 900px;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+    .hero-title .line2 {
+      display: block;
+      background: linear-gradient(135deg, var(--accent), var(--accent3), var(--success));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      background-size: 200% 200%;
+      animation: gradientShift 4s ease infinite;
+    }
+    @keyframes gradientShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+
+    .hero-sub {
+      font-size: 1.1rem; line-height: 1.75; color: var(--muted);
+      max-width: 500px; margin: 0 auto 2.5rem;
+      animation: fadeUp 0.6s 0.2s ease both;
     }
 
-    .btn-google:hover {
-      border-color: var(--muted);
-      background: rgba(255,255,255,0.03);
+    .hero-actions {
+      display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+      margin-bottom: 4.5rem;
+      animation: fadeUp 0.6s 0.3s ease both;
     }
-
-    .google-icon {
-      width: 18px;
-      height: 18px;
+    .btn-hero-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white; text-decoration: none;
+      border-radius: 12px; padding: 0.9rem 2.25rem;
+      font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700;
+      letter-spacing: 0.02em; transition: all 0.25s;
+      box-shadow: 0 4px 30px var(--accent-glow);
     }
-
-    /* Messages */
-    .msg {
-      font-family: 'Inconsolata', monospace;
-      font-size: 0.8rem;
-      padding: 0.6rem 0.9rem;
-      border-radius: 6px;
-      display: none;
-      animation: fadein 0.2s ease;
+    .btn-hero-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 40px var(--accent-glow); }
+    .btn-hero-ghost {
+      background: transparent; color: var(--muted); text-decoration: none;
+      border: 1px solid var(--border2); border-radius: 12px; padding: 0.9rem 2.25rem;
+      font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 600; transition: all 0.2s;
     }
+    .btn-hero-ghost:hover { border-color: var(--muted); color: var(--text); transform: translateY(-2px); }
 
-    @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+    /* Stats strip */
+    .hero-stats {
+      display: flex; gap: 0; justify-content: center;
+      border: 1px solid var(--border2); border-radius: 18px;
+      overflow: hidden; background: var(--surface);
+      animation: fadeUp 0.6s 0.4s ease both;
+      max-width: 640px; margin: 0 auto;
+    }
+    .hero-stat {
+      flex: 1; padding: 1.5rem 1.25rem; text-align: center;
+      border-right: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+    .hero-stat:last-child { border-right: none; }
+    .hero-stat:hover { background: var(--surface2); }
+    .hero-stat-num { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 900; letter-spacing: -0.04em; color: var(--text); line-height: 1; }
+    .hero-stat-num .u { color: var(--accent); }
+    .hero-stat-label { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted2); margin-top: 0.3rem; }
 
-    .msg.error { background: rgba(255,77,109,0.1); border: 1px solid rgba(255,77,109,0.3); color: var(--error); display: block; }
-    .msg.success { background: rgba(62,207,142,0.1); border: 1px solid rgba(62,207,142,0.3); color: var(--success); display: block; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ── SECTIONS ── */
+    section { position: relative; z-index: 1; padding: 7rem 2rem; }
+    .section-inner { max-width: 1100px; margin: 0 auto; }
+    .section-eyebrow {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+      letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent);
+      margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.6rem;
+    }
+    .section-eyebrow::before { content:''; width:1.5rem; height:1px; background:var(--accent); }
+    .section-title {
+      font-family: 'Outfit', sans-serif; font-size: clamp(2rem,4vw,3rem);
+      font-weight: 900; letter-spacing: -0.04em; line-height: 1.05;
+      color: var(--text); margin-bottom: 1rem;
+    }
+    .section-sub { font-size: 1rem; color: var(--muted); max-width: 480px; line-height: 1.75; margin-bottom: 3.5rem; }
+
+    /* ── FEATURES ── */
+    .features-bg { background: var(--bg2); }
+    .features-bg::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border2), transparent);
+    }
+    .features-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border-radius: 20px; overflow: hidden; border: 1px solid var(--border); }
+    @media(max-width:768px){ .features-grid { grid-template-columns: 1fr; } }
+
+    .feature-card {
+      background: var(--surface); padding: 2.25rem;
+      transition: background 0.2s; position: relative; overflow: hidden;
+    }
+    .feature-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(99,102,241,0), transparent);
+      transition: background 0.3s;
+    }
+    .feature-card:hover { background: var(--surface2); }
+    .feature-card:hover::before { background: linear-gradient(90deg, transparent, var(--accent), transparent); }
+    .feature-icon { font-size: 1.75rem; margin-bottom: 1.25rem; display: block; }
+    .feature-title { font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 0.5rem; color: var(--text); }
+    .feature-desc { font-size: 0.87rem; line-height: 1.7; color: var(--muted); }
+
+    /* ── TESTIMONIALS ── */
+    .testimonials-bg { background: var(--bg); }
+    .testimonials-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.25rem; }
+    @media(max-width:900px){ .testimonials-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px){ .testimonials-grid { grid-template-columns:1fr; } }
+
+    .t-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 18px; padding: 1.75rem;
+      transition: all 0.25s; position: relative; overflow: hidden;
+    }
+    .t-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--border2),transparent); transition:background 0.3s; }
+    .t-card:hover { transform: translateY(-3px); border-color: var(--border2); box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
+    .t-card:hover::before { background: linear-gradient(90deg,transparent,var(--accent),transparent); }
+    .t-card.hero-t { background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1)); border-color: rgba(99,102,241,0.3); }
+    .t-stars { font-size: 0.8rem; color: var(--gold); letter-spacing: 0.05em; margin-bottom: 1rem; }
+    .t-quote { font-size: 0.9rem; line-height: 1.75; color: var(--muted); margin-bottom: 1.5rem; }
+    .t-card.hero-t .t-quote { color: rgba(238,237,245,0.8); }
+    .t-author { display: flex; align-items: center; gap: 0.75rem; }
+    .t-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 0.8rem; color: white; flex-shrink: 0; }
+    .t-name { font-family: 'Outfit', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--text); }
+    .t-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--muted2); margin-top: 0.1rem; }
+    .score-pill { display: inline-block; background: rgba(16,217,160,0.15); color: var(--success); border: 1px solid rgba(16,217,160,0.2); border-radius: 5px; padding: 0.1rem 0.45rem; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; margin-left: 0.4rem; vertical-align: middle; }
+
+    /* ── LEADERBOARD PREVIEW ── */
+    .lb-section { background: var(--bg2); }
+    .lb-split { display: grid; grid-template-columns: 1fr 480px; gap: 5rem; align-items: center; }
+    @media(max-width:900px){ .lb-split { grid-template-columns:1fr; } }
+
+    .lb-card {
+      background: var(--surface); border: 1px solid var(--border2);
+      border-radius: 20px; overflow: hidden;
+    }
+    .lb-card-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--surface2);
+    }
+    .lb-card-title { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+    .lb-live { display: flex; align-items: center; gap: 0.4rem; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.08em; color: var(--success); }
+    .lb-live-dot { width: 5px; height: 5px; background: var(--success); border-radius: 50%; animation: pulse-dot 1.5s infinite; }
+    .lb-row {
+      display: flex; align-items: center; gap: 0.9rem;
+      padding: 0.9rem 1.5rem; border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    .lb-row:last-child { border-bottom: none; }
+    .lb-row:hover { background: var(--surface2); }
+    .lb-rank { font-family: 'Outfit', sans-serif; font-size: 0.85rem; font-weight: 900; color: var(--muted2); width: 1.5rem; text-align: center; }
+    .lb-rank.gold { color: var(--gold); }
+    .lb-rank.silver { color: #94a3b8; }
+    .lb-rank.bronze { color: #cd7f32; }
+    .lb-av { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 0.75rem; color: white; flex-shrink: 0; }
+    .lb-name { flex: 1; font-family: 'Space Grotesk', sans-serif; font-size: 0.88rem; font-weight: 600; color: var(--text); }
+    .lb-pts { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--muted); }
+    .lb-pts strong { color: var(--text); font-size: 0.95rem; }
+    .lb-you { opacity: 0.35; }
+    .lb-you .lb-name { color: var(--accent3); font-style: italic; }
+
+    /* ── PRICING ── */
+    .pricing-bg { background: var(--bg); }
+    .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 760px; margin: 0 auto; }
+    @media(max-width:600px){ .pricing-grid { grid-template-columns:1fr; } }
+
+    .p-card {
+      border: 1px solid var(--border2); border-radius: 20px; padding: 2.25rem;
+      background: var(--surface); position: relative; transition: all 0.25s;
+    }
+    .p-card:hover { border-color: var(--border2); box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+    .p-card.pro {
+      background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.08));
+      border-color: rgba(99,102,241,0.4);
+      transform: scale(1.02);
+    }
+    .p-card.pro:hover { transform: scale(1.02) translateY(-3px); }
+    .p-popular {
+      display: inline-block; background: var(--accent); color: white;
+      border-radius: 100px; padding: 0.2rem 0.75rem;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 1.25rem;
+    }
+    .p-plan { font-family: 'Outfit', sans-serif; font-size: 0.85rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+    .p-price { font-family: 'Outfit', sans-serif; font-size: 3.5rem; font-weight: 900; letter-spacing: -0.05em; line-height: 1; color: var(--text); }
+    .p-period { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--muted2); margin-bottom: 2rem; margin-top: 0.25rem; }
+    .p-features { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 2rem; }
+    .p-feat { display: flex; align-items: center; gap: 0.6rem; font-size: 0.88rem; color: var(--muted); }
+    .p-feat.active { color: var(--text); }
+    .p-feat-icon { font-size: 0.75rem; flex-shrink: 0; }
+    .p-feat.active .p-feat-icon { color: var(--success); }
+    .p-feat:not(.active) .p-feat-icon { color: var(--muted2); }
+    .btn-p {
+      display: block; width: 100%; text-align: center; text-decoration: none;
+      border-radius: 12px; padding: 0.875rem;
+      font-family: 'Outfit', sans-serif; font-size: 0.9rem; font-weight: 700;
+      letter-spacing: 0.03em; transition: all 0.2s; border: none; cursor: pointer;
+    }
+    .btn-p.free { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
+    .btn-p.free:hover { border-color: var(--muted); background: var(--bg2); }
+    .btn-p.pro { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; box-shadow: 0 4px 24px var(--accent-glow); }
+    .btn-p.pro:hover { transform: translateY(-1px); box-shadow: 0 8px 32px var(--accent-glow); }
+
+    /* ── FAQ ── */
+    .faq-bg { background: var(--bg2); }
+    .faq-bg::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--border2),transparent); }
+    .faq-list { max-width: 700px; }
+    .faq-item { border-bottom: 1px solid var(--border); }
+    .faq-q {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.4rem 0; cursor: pointer; gap: 1rem;
+      font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700;
+      color: var(--muted); transition: color 0.15s;
+    }
+    .faq-q:hover { color: var(--text); }
+    .faq-item.open .faq-q { color: var(--text); }
+    .faq-icon { font-size: 1rem; flex-shrink: 0; color: var(--muted2); transition: transform 0.25s, color 0.15s; }
+    .faq-item.open .faq-icon { transform: rotate(45deg); color: var(--accent); }
+    .faq-a { display: none; padding-bottom: 1.4rem; font-size: 0.9rem; line-height: 1.8; color: var(--muted); }
+    .faq-item.open .faq-a { display: block; animation: fadeDown 0.2s ease; }
+    @keyframes fadeDown { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ── CTA ── */
+    .cta-section {
+      padding: 8rem 2rem; text-align: center; position: relative; overflow: hidden;
+      background: var(--bg);
+    }
+    .cta-section::before {
+      content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      width: 700px; height: 500px;
+      background: radial-gradient(ellipse, rgba(99,102,241,0.15) 0%, transparent 70%);
+    }
+    .cta-section::after {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(99,102,241,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+    .cta-inner { position: relative; z-index: 2; }
+    .cta-title { font-family: 'Outfit', sans-serif; font-size: clamp(2.5rem,6vw,5rem); font-weight: 900; letter-spacing: -0.04em; line-height: 1.0; color: var(--text); margin-bottom: 1rem; }
+    .cta-title .gr { background: linear-gradient(135deg, var(--accent3), var(--success)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .cta-sub { font-size: 1rem; color: var(--muted); margin-bottom: 2.5rem; }
+    .cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn-cta {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white; text-decoration: none;
+      border-radius: 12px; padding: 0.9rem 2.25rem;
+      font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 800;
+      letter-spacing: 0.02em; transition: all 0.2s;
+      box-shadow: 0 4px 30px var(--accent-glow);
+    }
+    .btn-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 40px var(--accent-glow); }
+    .btn-cta-outline {
+      background: transparent; color: var(--muted); text-decoration: none;
+      border: 1px solid var(--border2); border-radius: 12px; padding: 0.9rem 2.25rem;
+      font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 600; transition: all 0.2s;
+    }
+    .btn-cta-outline:hover { border-color: var(--muted); color: var(--text); transform: translateY(-1px); }
+
+    /* ── FOOTER ── */
+    footer { background: var(--bg); border-top: 1px solid var(--border); padding: 2rem 2.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    .footer-logo { display: flex; align-items: center; gap: 0.5rem; text-decoration: none; }
+    .footer-logo-mark { width: 26px; height: 26px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 0.75rem; color: white; }
+    .footer-logo-text { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+    .footer-text { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.06em; color: var(--muted2); }
+
+    /* ── REVEAL ── */
+    .reveal { opacity:0; transform:translateY(28px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+    .reveal-delay-5 { transition-delay: 0.5s; }
   </style>
 </head>
 <body>
-  <div class="grid-bg"></div>
-  <div class="page">
-    <div class="container">
-      <div class="logo">
-        <div class="logo-mark">S</div>
-        <h1>SAT Algebra Tutor</h1>
-        <p>AI-powered practice</p>
+
+<canvas id="starfield"></canvas>
+
+<nav class="nav">
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-mark">S</div>
+    <span class="nav-logo-text">SAT Tutor</span>
+  </a>
+  <div class="nav-links">
+    <a href="#features" class="nav-link">Features</a>
+    <a href="#reviews" class="nav-link">Reviews</a>
+    <a href="#pricing" class="nav-link">Pricing</a>
+    <a href="#faq" class="nav-link">FAQ</a>
+  </div>
+  <a href="/login" class="nav-cta">Get Started →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge"><span class="badge-dot"></span> AI-Powered SAT Prep — Free to Start</div>
+    <h1 class="hero-title">
+      Ace the SAT.<br>
+      <span class="line2">Master Algebra.</span>
+    </h1>
+    <p class="hero-sub">Unlimited AI-generated problems, instant explanations, and a global leaderboard. Built to get you to 800.</p>
+    <div class="hero-actions">
+      <a href="/login" class="btn-hero-primary">Start for Free →</a>
+      <a href="#features" class="btn-hero-ghost">How it works ↓</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-num">30<span class="u">+</span></div>
+        <div class="hero-stat-label">Problems / Level</div>
       </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">3</div>
+        <div class="hero-stat-label">Difficulty Levels</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num"><span class="u">∞</span></div>
+        <div class="hero-stat-label">With Pro</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">800</div>
+        <div class="hero-stat-label">Target Score</div>
+      </div>
+    </div>
+  </div>
+</section>
 
-      <div class="card">
-        <div class="tabs">
-          <button class="tab active" onclick="switchTab('signin')">Sign In</button>
-          <button class="tab" onclick="switchTab('signup')">Sign Up</button>
+<!-- FEATURES -->
+<section id="features" class="features-bg">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-eyebrow">What you get</div>
+      <h2 class="section-title">Built for SAT success.<br>Not generic math.</h2>
+      <p class="section-sub">Every feature is designed around one goal — getting you a higher SAT Math score.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card reveal reveal-delay-1">
+        <span class="feature-icon">🤖</span>
+        <div class="feature-title">AI-Generated Problems</div>
+        <div class="feature-desc">Gemini AI generates fresh problems every time. Never the same question twice — unlimited unique practice at your exact level.</div>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <span class="feature-icon">📖</span>
+        <div class="feature-title">Step-by-Step Explanations</div>
+        <div class="feature-desc">After every answer, see exactly how to solve it. Learn the method, not just the answer — so you improve every session.</div>
+      </div>
+      <div class="feature-card reveal reveal-delay-3">
+        <span class="feature-icon">🎯</span>
+        <div class="feature-title">3 Difficulty Levels</div>
+        <div class="feature-desc">Easy, Medium, Hard — each calibrated to real SAT benchmarks. Start easy, build confidence, then tackle SAT-hard questions.</div>
+      </div>
+      <div class="feature-card reveal reveal-delay-1">
+        <span class="feature-icon">⏱</span>
+        <div class="feature-title">Timed Practice Mode</div>
+        <div class="feature-desc">30s, 60s, or 90s timers. Train under real pressure. Auto-submits when time runs out — exactly like the real SAT.</div>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <span class="feature-icon">📊</span>
+        <div class="feature-title">Full History & Stats</div>
+        <div class="feature-desc">Every problem you've ever solved — saved with explanations. Filter by correct/incorrect, see your accuracy trends over time.</div>
+      </div>
+      <div class="feature-card reveal reveal-delay-3">
+        <span class="feature-icon">🏆</span>
+        <div class="feature-title">Global Leaderboard</div>
+        <div class="feature-desc">Compete with students worldwide. Top 3 earn podium placement. The leaderboard makes practice addictive.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="reviews" class="testimonials-bg">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-eyebrow">Student results</div>
+      <h2 class="section-title">Real scores.<br>Real students.</h2>
+      <p class="section-sub">Students who practiced consistently saw dramatic score improvements.</p>
+    </div>
+    <div class="testimonials-grid">
+      <div class="t-card hero-t reveal reveal-delay-1">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-quote">"I went from struggling with algebra to getting every question right. The AI explanations finally made things click. Got a <strong>790</strong> on the Math section — I'm still shocked."</p>
+        <div class="t-author">
+          <div class="t-avatar" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">A</div>
+          <div>
+            <div class="t-name">Aisha K. <span class="score-pill">790/800</span></div>
+            <div class="t-meta">Harvard Freshman · 6 weeks of practice</div>
+          </div>
         </div>
-
-        <!-- Sign In -->
-        <div class="form active" id="signinForm">
-          <div class="field">
-            <label>Email</label>
-            <input type="email" id="siEmail" placeholder="you@example.com" />
+      </div>
+      <div class="t-card reveal reveal-delay-2">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-quote">"The timed mode was a game changer. I used to freeze up on tests but now I finish with time to spare. Scored 760 on my first real attempt."</p>
+        <div class="t-author">
+          <div class="t-avatar" style="background:linear-gradient(135deg,#10b981,#059669)">M</div>
+          <div>
+            <div class="t-name">Marcus T. <span class="score-pill">760/800</span></div>
+            <div class="t-meta">MIT Applicant · 8 weeks</div>
           </div>
-          <div class="field">
-            <label>Password</label>
-            <input type="password" id="siPassword" placeholder="••••••••" />
-          </div>
-          <div class="msg" id="siMsg"></div>
-          <button class="btn-primary" id="siBtn" onclick="signIn()">Sign In</button>
-          <div class="divider">or</div>
-          <button class="btn-google" onclick="googleAuth()">
-            <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-            Continue with Google
-          </button>
         </div>
-
-        <!-- Sign Up -->
-        <div class="form" id="signupForm">
-          <div class="field">
-            <label>Username</label>
-            <input type="text" id="suUsername" placeholder="mathwiz42" />
+      </div>
+      <div class="t-card reveal reveal-delay-3">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-quote">"Improved from 580 to 740 in 2 months. The difficulty ramp helped me build up without feeling overwhelmed. Best prep tool I've used."</p>
+        <div class="t-author">
+          <div class="t-avatar" style="background:linear-gradient(135deg,#f59e0b,#d97706)">S</div>
+          <div>
+            <div class="t-name">Sofia R. <span class="score-pill">+160 pts</span></div>
+            <div class="t-meta">Stanford · Started at 580</div>
           </div>
-          <div class="field">
-            <label>Email</label>
-            <input type="email" id="suEmail" placeholder="you@example.com" />
+        </div>
+      </div>
+      <div class="t-card reveal reveal-delay-1">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-quote">"Better than my $100/hr tutor and costs almost nothing. The leaderboard kept me coming back every day."</p>
+        <div class="t-author">
+          <div class="t-avatar" style="background:linear-gradient(135deg,#f43f6e,#e11d48)">J</div>
+          <div>
+            <div class="t-name">James L. <span class="score-pill">780/800</span></div>
+            <div class="t-meta">Yale · #2 on leaderboard</div>
           </div>
-          <div class="field">
-            <label>Password</label>
-            <input type="password" id="suPassword" placeholder="min 6 characters" />
+        </div>
+      </div>
+      <div class="t-card reveal reveal-delay-2">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-quote">"Never thought I'd enjoy studying for the SAT. Competing on the leaderboard made it feel like a game. Ended up with a perfect 800."</p>
+        <div class="t-author">
+          <div class="t-avatar" style="background:linear-gradient(135deg,#3b82f6,#2563eb)">P</div>
+          <div>
+            <div class="t-name">Priya N. <span class="score-pill">800/800</span></div>
+            <div class="t-meta">Princeton · #1 all-time</div>
           </div>
-          <div class="msg" id="suMsg"></div>
-          <button class="btn-primary" id="suBtn" onclick="signUp()">Create Account</button>
-          <div class="divider">or</div>
-          <button class="btn-google" onclick="googleAuth()">
-            <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-            Continue with Google
-          </button>
+        </div>
+      </div>
+      <div class="t-card reveal reveal-delay-3">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-quote">"As an international student the step-by-step breakdowns were incredibly clear. Went from 620 to 750 in 10 weeks."</p>
+        <div class="t-author">
+          <div class="t-avatar" style="background:linear-gradient(135deg,#14b8a6,#0d9488)">K</div>
+          <div>
+            <div class="t-name">Kenji W. <span class="score-pill">+130 pts</span></div>
+            <div class="t-meta">Columbia · International</div>
+          </div>
         </div>
       </div>
     </div>
   </div>
+</section>
 
-  <script>
-    // If already logged in, redirect
-    if (localStorage.getItem('sat_token')) window.location.href = '/app';
+<!-- LEADERBOARD -->
+<section class="lb-section">
+  <div class="section-inner">
+    <div class="lb-split">
+      <div class="reveal">
+        <div class="section-eyebrow">Compete globally</div>
+        <h2 class="section-title">See where you<br>stack up.</h2>
+        <p class="section-sub" style="margin-bottom:2rem">Every correct answer moves you up the global leaderboard. Top 3 earn podium placement.</p>
+        <a href="/login" class="btn-hero-primary" style="display:inline-block;text-decoration:none">Join the competition →</a>
+      </div>
+      <div class="reveal reveal-delay-2">
+        <div class="lb-card">
+          <div class="lb-card-header">
+            <span class="lb-card-title">Global Rankings</span>
+            <span class="lb-live"><span class="lb-live-dot"></span>Live</span>
+          </div>
+          <div class="lb-row">
+            <div class="lb-rank gold">1</div>
+            <div class="lb-av" style="background:linear-gradient(135deg,#f59e0b,#d97706)">P</div>
+            <div class="lb-name">Priya N.</div>
+            <div class="lb-pts"><strong>284</strong> correct</div>
+          </div>
+          <div class="lb-row">
+            <div class="lb-rank silver">2</div>
+            <div class="lb-av" style="background:linear-gradient(135deg,#f43f6e,#e11d48)">J</div>
+            <div class="lb-name">James L.</div>
+            <div class="lb-pts"><strong>271</strong> correct</div>
+          </div>
+          <div class="lb-row">
+            <div class="lb-rank bronze">3</div>
+            <div class="lb-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">A</div>
+            <div class="lb-name">Aisha K.</div>
+            <div class="lb-pts"><strong>258</strong> correct</div>
+          </div>
+          <div class="lb-row">
+            <div class="lb-rank">4</div>
+            <div class="lb-av" style="background:linear-gradient(135deg,#10b981,#059669)">M</div>
+            <div class="lb-name">Marcus T.</div>
+            <div class="lb-pts"><strong>241</strong> correct</div>
+          </div>
+          <div class="lb-row">
+            <div class="lb-rank">5</div>
+            <div class="lb-av" style="background:linear-gradient(135deg,#3b82f6,#2563eb)">K</div>
+            <div class="lb-name">Kenji W.</div>
+            <div class="lb-pts"><strong>229</strong> correct</div>
+          </div>
+          <div class="lb-row lb-you">
+            <div class="lb-rank">?</div>
+            <div class="lb-av" style="background:rgba(99,102,241,0.2)">Y</div>
+            <div class="lb-name">You, soon?</div>
+            <div class="lb-pts">Start now →</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-    function switchTab(tab) {
-      document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', (i === 0) === (tab === 'signin')));
-      document.getElementById('signinForm').classList.toggle('active', tab === 'signin');
-      document.getElementById('signupForm').classList.toggle('active', tab === 'signup');
-    }
+<!-- PRICING -->
+<section id="pricing" class="pricing-bg">
+  <div class="section-inner" style="text-align:center">
+    <div class="reveal">
+      <div class="section-eyebrow" style="justify-content:center">Simple pricing</div>
+      <h2 class="section-title">Start free.<br>Go unlimited.</h2>
+      <p class="section-sub" style="margin:0 auto 3.5rem">No credit card to start. Upgrade when you're serious.</p>
+    </div>
+    <div class="pricing-grid reveal">
+      <div class="p-card">
+        <div class="p-plan">Free</div>
+        <div class="p-price">$0</div>
+        <div class="p-period">forever · no card needed</div>
+        <div class="p-features">
+          <div class="p-feat active"><span class="p-feat-icon">✓</span> 5 practice problems</div>
+          <div class="p-feat active"><span class="p-feat-icon">✓</span> All 3 difficulty levels</div>
+          <div class="p-feat active"><span class="p-feat-icon">✓</span> Step-by-step explanations</div>
+          <div class="p-feat"><span class="p-feat-icon">—</span> Unlimited problems</div>
+          <div class="p-feat"><span class="p-feat-icon">—</span> Full history & stats</div>
+          <div class="p-feat"><span class="p-feat-icon">—</span> Global leaderboard</div>
+        </div>
+        <a href="/login" class="btn-p free">Get started free</a>
+      </div>
+      <div class="p-card pro">
+        <div class="p-popular">Most Popular</div>
+        <div class="p-plan">Pro</div>
+        <div class="p-price">$4.99</div>
+        <div class="p-period">per month · cancel anytime</div>
+        <div class="p-features">
+          <div class="p-feat active"><span class="p-feat-icon">✓</span> Unlimited problems</div>
+          <div class="p-feat active"><span class="p-feat-icon">✓</span> All 3 difficulty levels</div>
+          <div class="p-feat active"><span class="p-feat-icon">✓</span> Step-by-step explanations</div>
+          <div class="p-feat active"><span class="p-feat-icon">✓</span> Full history & stats</div>
+          <div class="p-feat active"><span class="p-feat-icon">✓</span> Global leaderboard</div>
+          <div class="p-feat active"><span class="p-feat-icon">✓</span> Priority support</div>
+        </div>
+        <a href="/login" class="btn-p pro">Upgrade to Pro →</a>
+      </div>
+    </div>
+  </div>
+</section>
 
-    function showMsg(id, text, type) {
-      const el = document.getElementById(id);
-      el.textContent = text;
-      el.className = `msg ${type}`;
-    }
+<!-- FAQ -->
+<section id="faq" class="faq-bg">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-eyebrow">Questions</div>
+      <h2 class="section-title">Frequently asked</h2>
+    </div>
+    <div class="faq-list reveal">
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">How is this different from Khan Academy or other SAT prep?<span class="faq-icon">+</span></div>
+        <div class="faq-a">Unlike static question banks, SAT Tutor generates fresh problems every time using AI — so you never run out of practice material and never memorize answers. Each problem is unique and calibrated to your chosen difficulty level.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What math topics does it cover?<span class="faq-icon">+</span></div>
+        <div class="faq-a">SAT Tutor focuses on SAT algebra: linear equations, systems of equations, quadratics, polynomial manipulation, inequalities, word problems, and function composition — exactly what appears on the SAT Math section.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">How does the difficulty system work?<span class="faq-icon">+</span></div>
+        <div class="faq-a">Easy covers basic algebra (6th–8th grade level). Medium matches the SAT Math section difficulty. Hard includes the toughest SAT-level problems involving polynomial manipulation and complex function composition.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Can I cancel my Pro subscription anytime?<span class="faq-icon">+</span></div>
+        <div class="faq-a">Yes, absolutely. Cancel anytime from your Stripe billing portal. You keep Pro access until the end of your billing period — no questions asked.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Do I need to create an account?<span class="faq-icon">+</span></div>
+        <div class="faq-a">Yes — a free account tracks your progress, saves history, and puts you on the leaderboard. Sign up with email or Google in seconds. No credit card needed.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">How long until I see score improvements?<span class="faq-icon">+</span></div>
+        <div class="faq-a">Most students see measurable improvement within 3–4 weeks of daily practice (20–30 min/day). Consistent Hard-level practice typically produces the biggest score jumps.</div>
+      </div>
+    </div>
+  </div>
+</section>
 
-    async function signIn() {
-      const email = document.getElementById('siEmail').value.trim();
-      const password = document.getElementById('siPassword').value;
-      if (!email || !password) return showMsg('siMsg', 'Please fill in all fields.', 'error');
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <h2 class="cta-title">Ready to score<br><span class="gr">800?</span></h2>
+    <p class="cta-sub">Join thousands of students practicing smarter with AI. Start free today.</p>
+    <div class="cta-btns">
+      <a href="/login" class="btn-cta">Start for Free →</a>
+      <a href="#pricing" class="btn-cta-outline">View pricing</a>
+    </div>
+  </div>
+</section>
 
-      const btn = document.getElementById('siBtn');
-      btn.disabled = true; btn.textContent = 'Signing in…';
+<footer>
+  <a href="/" class="footer-logo">
+    <div class="footer-logo-mark">S</div>
+    <span class="footer-logo-text">SAT Algebra Tutor</span>
+  </a>
+  <span class="footer-text">© 2026 · Built with Gemini AI · All rights reserved</span>
+</footer>
 
-      try {
-        const res = await fetch('/auth/signin', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || 'Sign in failed');
+<script>
+  if (localStorage.getItem('sat_token')) window.location.href = '/app';
 
-        localStorage.setItem('sat_token', data.access_token);
-        localStorage.setItem('sat_user', JSON.stringify(data.user));
-        window.location.href = '/app';
-      } catch (e) {
-        showMsg('siMsg', e.message, 'error');
-        btn.disabled = false; btn.textContent = 'Sign In';
-      }
-    }
+  // ── STARFIELD CANVAS ──
+  const canvas = document.getElementById('starfield');
+  const ctx = canvas.getContext('2d');
+  let W, H;
 
-    async function signUp() {
-      const username = document.getElementById('suUsername').value.trim();
-      const email = document.getElementById('suEmail').value.trim();
-      const password = document.getElementById('suPassword').value;
-      if (!username || !email || !password) return showMsg('suMsg', 'Please fill in all fields.', 'error');
-      if (password.length < 6) return showMsg('suMsg', 'Password must be at least 6 characters.', 'error');
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
 
-      const btn = document.getElementById('suBtn');
-      btn.disabled = true; btn.textContent = 'Creating account…';
+  const stars = Array.from({length: 120}, () => ({
+    x: Math.random(), y: Math.random(),
+    r: Math.random() * 1.2 + 0.2,
+    a: Math.random() * 0.6 + 0.1,
+    speed: Math.random() * 0.00015 + 0.00005,
+    twinkle: Math.random() * Math.PI * 2,
+  }));
 
-      try {
-        const res = await fetch('/auth/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, username })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || 'Sign up failed');
-
-        if (data.access_token) {
-          localStorage.setItem('sat_token', data.access_token);
-          localStorage.setItem('sat_user', JSON.stringify(data.user));
-          window.location.href = '/app';
-        } else {
-          showMsg('suMsg', 'Check your email to confirm your account, then sign in.', 'success');
-          btn.disabled = false; btn.textContent = 'Create Account';
-        }
-      } catch (e) {
-        showMsg('suMsg', e.message, 'error');
-        btn.disabled = false; btn.textContent = 'Create Account';
-      }
-    }
-
-    function googleAuth() {
-      // Supabase Google OAuth — redirect to backend which redirects to Supabase
-      window.location.href = '/auth/google';
-    }
-
-    // Enter key support
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        if (document.getElementById('signinForm').classList.contains('active')) signIn();
-        else signUp();
-      }
+  function drawStars(t) {
+    ctx.clearRect(0, 0, W, H);
+    stars.forEach(s => {
+      s.twinkle += 0.02;
+      const alpha = s.a * (0.6 + 0.4 * Math.sin(s.twinkle));
+      ctx.beginPath();
+      ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(180,180,255,${alpha})`;
+      ctx.fill();
+      s.y -= s.speed;
+      if (s.y < -0.01) { s.y = 1.01; s.x = Math.random(); }
     });
-  </script>
+    requestAnimationFrame(drawStars);
+  }
+  requestAnimationFrame(drawStars);
+
+  // ── FAQ ──
+  function toggleFaq(el) { el.parentElement.classList.toggle('open'); }
+
+  // ── SCROLL REVEAL ──
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // ── SMOOTH SCROLL ──
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const t = document.querySelector(a.getAttribute('href'));
+      if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  // ── NAV SCROLL EFFECT ──
+  const nav = document.querySelector('.nav');
+  window.addEventListener('scroll', () => {
+    nav.style.borderBottomColor = window.scrollY > 50 ? 'rgba(30,30,53,0.8)' : 'var(--border)';
+  });
+</script>
 </body>
 </html>

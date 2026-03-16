@@ -5,45 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SAT Algebra Tutor — Leaderboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root, [data-theme="dark"] {
-      --bg: #0a0a0f;
-      --surface: #111118;
-      --surface2: #16161f;
-      --border: #1e1e2e;
-      --accent: #7c6aff;
-      --accent-glow: rgba(124,106,255,0.2);
-      --text: #e8e6f0;
+        :root,     :root, [data-theme="dark"] {
+      --bg: #080810;
+      --surface: #0e0e1a;
+      --surface2: #13131f;
+      --border: #1c1c2e;
+      --accent: #6366f1;
+      --accent2: #8b5cf6;
+      --accent-glow: rgba(99,102,241,0.25);
+      --text: #eeedf5;
       --muted: #6b6880;
-      --success: #3ecf8e;
-      --error: #ff4d6d;
-      --gold: #f0c050;
-      --silver: #a0aec0;
-      --bronze: #c87941;
-      --nav-bg: rgba(10,10,15,0.85);
+      --success: #22d3a5;
+      --error: #f43f6e;
+      --gold: #fbbf24;
+      --nav-bg: rgba(8,8,16,0.9);
     }
 
-    [data-theme="light"] {
-      --bg: #f4f3f8;
+        [data-theme="light"] {
+      --bg: #f1f0f7;
       --surface: #ffffff;
-      --surface2: #f0eff6;
-      --border: #e2e0ec;
-      --accent: #6c58f5;
-      --accent-glow: rgba(108,88,245,0.15);
-      --text: #1a1828;
+      --surface2: #eceaf6;
+      --border: #dddbe8;
+      --accent: #6366f1;
+      --accent2: #8b5cf6;
+      --accent-glow: rgba(99,102,241,0.15);
+      --text: #16151f;
       --muted: #7b7893;
-      --success: #1a9e6a;
-      --error: #d93050;
-      --gold: #b8860b;
-      --silver: #718096;
-      --bronze: #a0522d;
-      --nav-bg: rgba(244,243,248,0.9);
+      --success: #059669;
+      --error: #e11d48;
+      --gold: #d97706;
+      --nav-bg: rgba(241,240,247,0.92);
     }
 
-    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; }
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; }
 
     body::before {
       content: '';
@@ -62,20 +60,20 @@
       padding: 0.85rem 2rem;
     }
 
-    .nav-logo { display: flex; align-items: center; gap: 0.6rem; font-weight: 800; font-size: 1rem; letter-spacing: -0.02em; }
-    .nav-dot { width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent), #a78bfa); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; }
+    .nav-logo { display: flex; align-items: center; gap: 0.6rem; font-weight: 800; font-size: 0.9rem; letter-spacing: 0.06em; text-transform: uppercase; font-family: 'Outfit', sans-serif; }
+        .nav-dot { width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; color: white; font-family: 'Outfit', sans-serif; }
     .nav-links { display: flex; gap: 0.5rem; }
-    .nav-link { font-family: 'Inconsolata', monospace; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); text-decoration: none; padding: 0.4rem 0.75rem; border-radius: 6px; transition: all 0.15s; }
+    .nav-link { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-decoration: none; padding: 0.4rem 0.75rem; border-radius: 6px; transition: all 0.15s; }
     .nav-link:hover { color: var(--text); background: var(--surface); }
     .nav-link.active { color: var(--accent); }
-    .btn-signout { font-family: 'Inconsolata', monospace; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.35rem 0.75rem; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
+    .btn-signout { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.35rem 0.8rem; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
     .btn-signout:hover { border-color: var(--error); color: var(--error); }
 
     .page { max-width: 680px; margin: 0 auto; padding: 2.5rem 2rem; }
 
     .page-header { margin-bottom: 2rem; }
-    .page-eyebrow { font-family: 'Inconsolata', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
-    .page-title { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; }
+    .page-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
+    .page-title { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 900; letter-spacing: -0.04em; text-transform: uppercase; }
 
     /* Top 3 podium */
     .podium {
@@ -100,27 +98,17 @@
     .podium-item.rank-3 { border-color: rgba(200,121,65,0.3); }
 
     .podium-medal { font-size: 1.5rem; margin-bottom: 0.5rem; }
-    .podium-name { font-size: 0.85rem; font-weight: 700; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .podium-score { font-family: 'Inconsolata', monospace; font-size: 1.25rem; font-weight: 500; }
-    .podium-item.rank-1 .podium-score { color: var(--gold); }
-    .podium-item.rank-2 .podium-score { color: var(--silver); }
-    .podium-item.rank-3 .podium-score { color: var(--bronze); }
-    .podium-acc { font-family: 'Inconsolata', monospace; font-size: 0.65rem; color: var(--muted); margin-top: 0.2rem; }
+    .podium-name { font-family: 'Outfit', sans-serif; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.02em; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .podium-score { font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; }
+    .podium-item.rank-1 .podium-score { font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; }
+    .podium-item.rank-2 .podium-score { font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; }
+    .podium-item.rank-3 .podium-score { font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; }
+    .podium-acc { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.05em; color: var(--muted); margin-top: 0.2rem; }
 
     /* Table */
     .lb-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
 
-    .lb-header {
-      display: grid;
-      grid-template-columns: 2.5rem 1fr 6rem 6rem 5rem;
-      padding: 0.75rem 1.25rem;
-      border-bottom: 1px solid var(--border);
-      font-family: 'Inconsolata', monospace;
-      font-size: 0.65rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
+    .lb-header { display: grid; grid-template-columns: 2.5rem 1fr 6rem 6rem 5rem; padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
 
     .lb-row {
       display: grid;
@@ -135,10 +123,10 @@
     .lb-row:hover { background: var(--surface2); }
     .lb-row.me { background: rgba(124,106,255,0.06); }
 
-    .lb-rank { font-family: 'Inconsolata', monospace; font-size: 0.8rem; color: var(--muted); font-weight: 500; }
-    .lb-name { font-size: 0.9rem; font-weight: 600; }
-    .lb-name .you-tag { font-family: 'Inconsolata', monospace; font-size: 0.6rem; color: var(--accent); background: rgba(124,106,255,0.15); padding: 0.1rem 0.4rem; border-radius: 4px; margin-left: 0.5rem; }
-    .lb-val { font-family: 'Inconsolata', monospace; font-size: 0.85rem; text-align: right; }
+    .lb-rank { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--muted); font-weight: 500; }
+    .lb-name { font-family: 'Space Grotesk', sans-serif; font-size: 0.9rem; font-weight: 600; }
+    .lb-name .you-tag { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: var(--accent); background: rgba(124,106,255,0.15); padding: 0.1rem 0.4rem; border-radius: 4px; margin-left: 0.5rem; }
+    .lb-val { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; text-align: right; }
     .lb-correct { color: var(--success); }
     .lb-pct { color: var(--muted); font-size: 0.8rem; }
 
@@ -146,9 +134,9 @@
     .loader-wrap { text-align: center; padding: 3rem; }
     .spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 1rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .loader-txt { font-family: 'Inconsolata', monospace; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+    .loader-txt { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
 
-    .empty { font-family: 'Inconsolata', monospace; font-size: 0.8rem; color: var(--muted); text-align: center; padding: 2rem; }
+    .empty { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--muted); text-align: center; padding: 2rem; }
   </style>
 </head>
 <body>

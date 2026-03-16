@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SAT Algebra Tutor — Sign In</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #0d0d14;
+      --paper: #f7f5f0;
+      --accent: #2563eb;
+      --accent2: #7c3aed;
+      --gold: #d97706;
+      --surface: rgba(255,255,255,0.85);
+      --border: rgba(0,0,0,0.08);
+      --muted: #6b7280;
+      --error: #dc2626;
+      --success: #059669;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--ink);
+      color: var(--ink);
+      font-family: 'Space Grotesk', sans-serif;
+      overflow: hidden;
+    }
+
+    /* ── CANVAS BACKGROUND ── */
+    #bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+    }
+
+    /* ── FLOATING EQUATIONS ── */
+    .eq-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .eq {
+      position: absolute;
+      font-family: 'Outfit', sans-serif;
+      font-style: italic;
+      color: rgba(255,255,255,0.07);
+      white-space: nowrap;
+      animation: floatEq linear infinite;
+      user-select: none;
+    }
+
+    @keyframes floatEq {
+      0%   { transform: translateY(110vh) rotate(var(--rot)); opacity: 0; }
+      5%   { opacity: 1; }
+      95%  { opacity: 1; }
+      100% { transform: translateY(-20vh) rotate(var(--rot)); opacity: 0; }
+    }
+
+    /* ── PAGE LAYOUT ── */
+    .page {
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 480px;
+    }
+
+    @media (max-width: 900px) {
+      .page { grid-template-columns: 1fr; }
+      .hero { display: none; }
+    }
+
+    /* Tilt card */
+    .panel {
+      transform-style: preserve-3d;
+      transition: transform 0.05s linear;
+    }
+
+    /* ── HERO SIDE ── */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 4rem 3rem 4rem 4rem;
+      position: relative;
+    }
+
+    .hero-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .hero-eyebrow::before {
+      content: '';
+      width: 2rem;
+      height: 1px;
+      background: rgba(255,255,255,0.3);
+    }
+
+    .hero-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(2.8rem, 5vw, 4.5rem);
+      font-weight: 900;
+      line-height: 1.0;
+      color: white;
+      letter-spacing: -0.04em;
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
+    }
+
+    .hero-title em {
+      font-style: normal;
+      font-weight: 900;
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: block;
+      letter-spacing: -0.05em;
+    }
+
+    .hero-sub {
+      font-size: 1rem;
+      line-height: 1.7;
+      color: rgba(255,255,255,0.5);
+      max-width: 380px;
+      margin-bottom: 3rem;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 2.5rem;
+    }
+
+    .stat { }
+    .stat-num {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: white;
+      line-height: 1;
+      margin-bottom: 0.2rem;
+      letter-spacing: -0.03em;
+    }
+    .stat-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+    }
+
+    .hero-deco {
+      position: absolute;
+      bottom: 3rem;
+      left: 4rem;
+      right: 3rem;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.15), transparent);
+    }
+
+    /* ── FORM PANEL ── */
+    .panel {
+      background: var(--paper);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 3rem 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel::before {
+      content: '';
+      position: absolute;
+      top: -100px;
+      right: -100px;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(37,99,235,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .panel-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .logo-mark {
+      width: 40px;
+      height: 40px;
+      background: var(--ink);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.1rem;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .logo-text {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid rgba(0,0,0,0.08);
+      margin-bottom: 2rem;
+      gap: 0;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 0.75rem 0;
+      border: none;
+      background: transparent;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      color: var(--muted);
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s;
+    }
+
+    .tab::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--ink);
+      transform: scaleX(0);
+      transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .tab.active { color: var(--ink); font-weight: 600; }
+    .tab.active::after { transform: scaleX(1); }
+
+    /* Form */
+    .form { display: none; flex-direction: column; gap: 1.1rem; }
+    .form.active { display: flex; }
+
+    .field { display: flex; flex-direction: column; gap: 0.4rem; }
+
+    label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    input {
+      background: white;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 0.8rem 1rem;
+      color: var(--ink);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.92rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      width: 100%;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+
+    /* Primary button */
+    .btn-primary {
+      background: var(--ink);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 0.85rem;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 0.25rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .btn-primary:hover:not(:disabled)::after { opacity: 1; }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.05em;
+    }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* Google button */
+    .btn-google {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      background: white;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 0.8rem;
+      color: var(--ink);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-google:hover { border-color: rgba(0,0,0,0.2); box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-1px); }
+    .google-icon { width: 18px; height: 18px; }
+
+    /* Messages */
+    .msg {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      padding: 0.65rem 0.9rem;
+      border-radius: 8px;
+      display: none;
+      line-height: 1.5;
+    }
+    .msg.error { background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.2); color: var(--error); display: block; }
+    .msg.success { background: rgba(5,150,105,0.08); border: 1px solid rgba(5,150,105,0.2); color: var(--success); display: block; }
+
+    /* Animated number counter */
+    @keyframes countUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .stat-num {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: white;
+      line-height: 1;
+      margin-bottom: 0.2rem;
+      letter-spacing: -0.03em;
+    }
+
+    /* Panel entrance */
+    .panel { animation: slideIn 0.5s cubic-bezier(0.4,0,0.2,1) forwards; }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .hero-title, .hero-sub, .hero-stats {
+      opacity: 0;
+      animation: fadeUp 0.7s ease forwards;
+    }
+    .hero-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(2.8rem, 5vw, 4.5rem);
+      font-weight: 900;
+      line-height: 1.0;
+      color: white;
+      letter-spacing: -0.04em;
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
+    }
+    .hero-sub { animation-delay: 0.25s; }
+    .hero-stats { animation-delay: 0.4s; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="bg"></canvas>
+  <!-- cursor injected by JS -->
+
+  <div class="eq-layer" id="eqLayer"></div>
+
+  <div class="page">
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-eyebrow">AI-Powered SAT Prep</div>
+      <h1 class="hero-title">
+        Master<br>
+        <em>Algebra.</em>
+      </h1>
+      <p class="hero-sub">
+        Practice with unlimited AI-generated problems, get instant explanations, and track your progress against students worldwide.
+      </p>
+      <div class="hero-stats">
+        <div class="stat">
+          <div class="stat-num" id="c1">30+</div>
+          <div class="stat-label">Problems / Level</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" id="c2">3</div>
+          <div class="stat-label">Difficulty Levels</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" id="c3">∞</div>
+          <div class="stat-label">With Pro Plan</div>
+        </div>
+      </div>
+      <div class="hero-deco"></div>
+    </div>
+
+    <!-- Form Panel -->
+    <div class="panel">
+      <div class="panel-logo">
+        <div class="logo-mark">S</div>
+        <span class="logo-text">SAT Algebra Tutor</span>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('signin')">Sign In</button>
+        <button class="tab" onclick="switchTab('signup')">Create Account</button>
+      </div>
+
+      <!-- Sign In -->
+      <div class="form active" id="signinForm">
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="siEmail" placeholder="you@example.com" autocomplete="email" />
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="siPassword" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <div class="msg" id="siMsg"></div>
+        <button class="btn-primary" id="siBtn" onclick="signIn()">Sign In →</button>
+        <div class="divider">or continue with</div>
+        <button class="btn-google" onclick="googleAuth()">
+          <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Google
+        </button>
+      </div>
+
+      <!-- Sign Up -->
+      <div class="form" id="signupForm">
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="suUsername" placeholder="mathwiz42" autocomplete="username" />
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="suEmail" placeholder="you@example.com" autocomplete="email" />
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="suPassword" placeholder="min 6 characters" autocomplete="new-password" />
+        </div>
+        <div class="msg" id="suMsg"></div>
+        <button class="btn-primary" id="suBtn" onclick="signUp()">Create Account →</button>
+        <div class="divider">or continue with</div>
+        <button class="btn-google" onclick="googleAuth()">
+          <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Google
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if (localStorage.getItem('sat_token')) window.location.href = '/app';
+
+    // ── CANVAS BACKGROUND ──
+    const canvas = document.getElementById('bg');
+    const ctx = canvas.getContext('2d');
+    let W, H, particles = [], lines = [];
+
+    function resize() {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Grid + noise background
+    function drawBg() {
+      // Deep dark gradient
+      const grad = ctx.createRadialGradient(W*0.3, H*0.3, 0, W*0.5, H*0.5, W*0.8);
+      grad.addColorStop(0, '#0f1424');
+      grad.addColorStop(0.5, '#0a0d18');
+      grad.addColorStop(1, '#060810');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Subtle grid
+      ctx.strokeStyle = 'rgba(255,255,255,0.025)';
+      ctx.lineWidth = 1;
+      const gs = 60;
+      for (let x = 0; x < W; x += gs) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+      }
+      for (let y = 0; y < H; y += gs) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      }
+
+      // Glowing orbs
+      const orbs = [
+        { x: W*0.15, y: H*0.25, r: 250, c: 'rgba(37,99,235,0.12)' },
+        { x: W*0.7,  y: H*0.7,  r: 300, c: 'rgba(124,58,237,0.1)' },
+        { x: W*0.5,  y: H*0.1,  r: 200, c: 'rgba(37,99,235,0.07)' },
+      ];
+      orbs.forEach(o => {
+        const g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r);
+        g.addColorStop(0, o.c);
+        g.addColorStop(1, 'transparent');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, H);
+      });
+    }
+
+    // Particles
+    class Particle {
+      constructor() { this.reset(); }
+      reset() {
+        this.x = Math.random() * W;
+        this.y = Math.random() * H;
+        this.vx = (Math.random() - 0.5) * 0.3;
+        this.vy = (Math.random() - 0.5) * 0.3;
+        this.r = Math.random() * 1.5 + 0.5;
+        this.alpha = Math.random() * 0.5 + 0.1;
+      }
+      update() {
+        this.x += this.vx; this.y += this.vy;
+        if (this.x < 0 || this.x > W || this.y < 0 || this.y > H) this.reset();
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(150,180,255,${this.alpha})`;
+        ctx.fill();
+      }
+    }
+
+    for (let i = 0; i < 80; i++) particles.push(new Particle());
+
+    let frame = 0;
+    function animate() {
+      requestAnimationFrame(animate);
+      frame++;
+      drawBg();
+
+      // Draw connections
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i+1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const d = Math.sqrt(dx*dx + dy*dy);
+          if (d < 120) {
+            ctx.strokeStyle = `rgba(100,150,255,${0.15 * (1 - d/120)})`;
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      particles.forEach(p => { p.update(); p.draw(); });
+    }
+    animate();
+
+    // ── FLOATING EQUATIONS ──
+    const equations = [
+      'x² + bx + c = 0', '∫ f(x) dx', 'y = mx + b',
+      'ax² + bx + c', '√(b²-4ac)', 'lim x→∞',
+      'f(x) = x³ - 4x', 'Σ aₙ', '|x - 3| < 5',
+      '2x + 3y = 12', 'x = (-b ± √Δ) / 2a',
+      'P(A∩B)', 'log₂(x)', 'sin²θ + cos²θ = 1',
+      '∀x ∈ ℝ', 'dy/dx', 'n! / k!(n-k)!',
+    ];
+
+    const layer = document.getElementById('eqLayer');
+    equations.forEach((eq, i) => {
+      const el = document.createElement('div');
+      el.className = 'eq';
+      el.textContent = eq;
+      const size = Math.random() * 1.2 + 0.7;
+      const left = Math.random() * 85;
+      const dur = Math.random() * 20 + 15;
+      const delay = Math.random() * -30;
+      const rot = (Math.random() - 0.5) * 20;
+      el.style.cssText = `
+        left: ${left}%;
+        font-size: ${size}rem;
+        --rot: ${rot}deg;
+        animation-duration: ${dur}s;
+        animation-delay: ${delay}s;
+      `;
+      layer.appendChild(el);
+    });
+
+    // ── FORM LOGIC ──
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach((t, i) =>
+        t.classList.toggle('active', (i === 0) === (tab === 'signin'))
+      );
+      document.getElementById('signinForm').classList.toggle('active', tab === 'signin');
+      document.getElementById('signupForm').classList.toggle('active', tab === 'signup');
+    }
+
+    function showMsg(id, text, type) {
+      const el = document.getElementById(id);
+      el.textContent = text;
+      el.className = `msg ${type}`;
+    }
+
+    async function signIn() {
+      const email = document.getElementById('siEmail').value.trim();
+      const password = document.getElementById('siPassword').value;
+      if (!email || !password) return showMsg('siMsg', 'Please fill in all fields.', 'error');
+      const btn = document.getElementById('siBtn');
+      btn.disabled = true; btn.textContent = 'Signing in…';
+      try {
+        const res = await fetch('/auth/signin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Sign in failed');
+        localStorage.setItem('sat_token', data.access_token);
+        localStorage.setItem('sat_user', JSON.stringify(data.user));
+        window.location.href = '/app';
+      } catch (e) {
+        showMsg('siMsg', e.message, 'error');
+        btn.disabled = false; btn.textContent = 'Sign In →';
+      }
+    }
+
+    async function signUp() {
+      const username = document.getElementById('suUsername').value.trim();
+      const email = document.getElementById('suEmail').value.trim();
+      const password = document.getElementById('suPassword').value;
+      if (!username || !email || !password) return showMsg('suMsg', 'Please fill in all fields.', 'error');
+      if (password.length < 6) return showMsg('suMsg', 'Password must be at least 6 characters.', 'error');
+      const btn = document.getElementById('suBtn');
+      btn.disabled = true; btn.textContent = 'Creating account…';
+      try {
+        const res = await fetch('/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, username })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Sign up failed');
+        if (data.access_token) {
+          localStorage.setItem('sat_token', data.access_token);
+          localStorage.setItem('sat_user', JSON.stringify(data.user));
+          window.location.href = '/app';
+        } else {
+          showMsg('suMsg', 'Check your email to confirm your account, then sign in.', 'success');
+          btn.disabled = false; btn.textContent = 'Create Account →';
+        }
+      } catch (e) {
+        showMsg('suMsg', e.message, 'error');
+        btn.disabled = false; btn.textContent = 'Create Account →';
+      }
+    }
+
+    function googleAuth() { window.location.href = '/auth/google'; }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        if (document.getElementById('signinForm').classList.contains('active')) signIn();
+        else signUp();
+      }
+    });
+
+
+  </script>

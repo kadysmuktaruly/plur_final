@@ -84,6 +84,10 @@ async def tutor_app():
 async def leaderboard_page():
     return FileResponse(BASE_DIR / "public" / "leaderboard.html")
 
+@app.get("/login")
+async def login_page():
+    return FileResponse(BASE_DIR / "public" / "login.html")
+
 @app.get("/history-page")
 async def history_page():
     return FileResponse(BASE_DIR / "public" / "history.html")
@@ -311,7 +315,6 @@ async def create_checkout(user_id: str = Depends(verify_token)):
         )
         return {"url": session.url}
     except Exception as e:
-        print(f"STRIPE ERROR: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
