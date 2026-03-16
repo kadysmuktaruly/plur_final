@@ -52,32 +52,47 @@
     body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 50% 40% at 10% 10%, rgba(124,106,255,0.04) 0%, transparent 60%); pointer-events: none; }
 
     nav {
-      position: sticky; top: 0; z-index: 100;
+      position: sticky; top: 0; z-index: 200;
       background: var(--nav-bg); backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0.85rem 1.25rem;
-      gap: 0.5rem;
+      padding: 0.75rem 1.5rem; gap: 0.5rem;
     }
     .nav-logo { display: flex; align-items: center; gap: 0.6rem; font-weight: 800; font-size: 0.9rem; letter-spacing: 0.06em; text-transform: uppercase; font-family: 'Outfit', sans-serif; flex-shrink: 0; }
-        .nav-dot { width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; color: white; font-family: 'Outfit', sans-serif; }
+    .nav-dot { width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; color: white; font-family: 'Outfit', sans-serif; }
     .nav-links { display: flex; align-items: center; gap: 0.25rem; }
     .nav-link { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-decoration: none; padding: 0.4rem 0.6rem; border-radius: 6px; transition: all 0.15s; }
     .nav-link:hover { color: var(--text); background: var(--surface); }
     .nav-link.active { color: var(--accent); }
-    .nav-user { display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; }
+    .nav-right { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
     .user-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--muted); }
-    .theme-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; transition: all 0.15s; }
+    .theme-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; transition: all 0.15s; flex-shrink: 0; }
     .theme-btn:hover { border-color: var(--accent); }
-    .btn-signout { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.35rem 0.8rem; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
+    .btn-signout { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.35rem 0.8rem; border-radius: 6px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
     .btn-signout:hover { border-color: var(--error); color: var(--error); }
-
-    @media (max-width: 600px) {
-      nav { padding: 0.7rem 1rem; }
-      .nav-logo span { display: none; }
-      .nav-link { font-size: 0.62rem; padding: 0.35rem 0.45rem; letter-spacing: 0.05em; }
-      .user-badge { display: none; }
-      .btn-signout { font-size: 0.6rem; padding: 0.3rem 0.55rem; }
+    /* Hamburger */
+    .nav-burger { display: none; flex-direction: column; justify-content: center; gap: 5px; width: 34px; height: 34px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; padding: 7px; flex-shrink: 0; transition: border-color 0.15s; }
+    .nav-burger:hover { border-color: var(--accent); }
+    .nav-burger span { display: block; height: 2px; background: var(--text); border-radius: 2px; transition: all 0.25s; }
+    .nav-burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-burger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .nav-burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    /* Drawer */
+    .nav-drawer { display: none; position: fixed; top: 53px; left: 0; right: 0; z-index: 199; background: var(--nav-bg); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 1rem 1.25rem 1.25rem; flex-direction: column; gap: 0.25rem; animation: drawerIn 0.2s ease; }
+    .nav-drawer.open { display: flex; }
+    @keyframes drawerIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+    .drawer-link { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-decoration: none; padding: 0.75rem 0.85rem; border-radius: 8px; transition: all 0.15s; }
+    .drawer-link:hover { color: var(--text); background: var(--surface); }
+    .drawer-link.active { color: var(--accent); background: rgba(99,102,241,0.07); }
+    .drawer-divider { height: 1px; background: var(--border); margin: 0.5rem 0; }
+    .drawer-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.25rem; }
+    .drawer-username { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .drawer-signout { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.45rem 0.9rem; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
+    .drawer-signout:hover { border-color: var(--error); color: var(--error); }
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .nav-right { display: none; }
+      .nav-burger { display: flex; }
     }
 
     .page { max-width: 800px; margin: 0 auto; padding: 2rem 1.25rem; }
@@ -199,12 +214,26 @@
       <a href="/leaderboard" class="nav-link">Leaderboard</a>
       <a href="/history-page" class="nav-link active">History</a>
     </div>
-    <div class="nav-user">
+    <div class="nav-right">
       <span class="user-badge" id="userBadge"></span>
       <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
       <button class="btn-signout" onclick="signOut()">Sign out</button>
     </div>
+    <button class="nav-burger" id="navBurger" onclick="toggleDrawer()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
   </nav>
+  <div class="nav-drawer" id="navDrawer">
+    <a href="/app" class="drawer-link">Practice</a>
+    <a href="/leaderboard" class="drawer-link">Leaderboard</a>
+    <a href="/history-page" class="drawer-link active">History</a>
+    <div class="drawer-divider"></div>
+    <div class="drawer-row">
+      <span class="drawer-username" id="drawerUsername"></span>
+      <button class="theme-btn" id="drawerThemeBtn" onclick="toggleTheme()">🌙</button>
+      <button class="drawer-signout" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
 
   <div class="page">
     <div class="page-eyebrow">Your progress</div>
@@ -241,18 +270,34 @@
     const user = JSON.parse(localStorage.getItem('sat_user') || '{}');
     if (!token) { window.location.replace('/'); throw new Error('redirect'); }
     document.getElementById('userBadge').textContent = user.username || user.email || '';
+    const du = document.getElementById('drawerUsername');
+    if (du) du.textContent = user.username || user.email || '';
 
     // Theme
     const savedTheme = localStorage.getItem('sat_theme') || 'dark';
     applyTheme(savedTheme);
     function applyTheme(t) {
       document.documentElement.setAttribute('data-theme', t);
-      document.getElementById('themeBtn').textContent = t === 'dark' ? '🌙' : '☀️';
+      const icon = t === 'dark' ? '🌙' : '☀️';
+      document.getElementById('themeBtn').textContent = icon;
+      const dt = document.getElementById('drawerThemeBtn');
+      if (dt) dt.textContent = icon;
       localStorage.setItem('sat_theme', t);
     }
     function toggleTheme() {
       applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
     }
+    function toggleDrawer() {
+      document.getElementById('navBurger').classList.toggle('open');
+      document.getElementById('navDrawer').classList.toggle('open');
+    }
+    document.addEventListener('click', e => {
+      const drawer = document.getElementById('navDrawer');
+      const burger = document.getElementById('navBurger');
+      if (drawer.classList.contains('open') && !drawer.contains(e.target) && !burger.contains(e.target)) {
+        drawer.classList.remove('open'); burger.classList.remove('open');
+      }
+    });
 
     function signOut() {
       localStorage.removeItem('sat_token');
