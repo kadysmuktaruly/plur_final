@@ -70,9 +70,9 @@
     .theme-btn-nav { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; transition: all 0.15s; }
     .theme-btn-nav:hover { border-color: var(--accent); }
     /* Hamburger */
-    .nav-burger { display: none; flex-direction: column; justify-content: center; gap: 5px; width: 34px; height: 34px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; padding: 7px; flex-shrink: 0; transition: border-color 0.15s; }
+    .nav-burger { display: none; flex-direction: column; justify-content: center; align-items: stretch; gap: 5px; width: 34px; height: 34px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; padding: 8px 7px; flex-shrink: 0; transition: border-color 0.15s; box-sizing: border-box; }
     .nav-burger:hover { border-color: var(--accent); }
-    .nav-burger span { display: block; height: 2px; background: var(--text); border-radius: 2px; transition: all 0.25s; }
+    .nav-burger span { display: block; width: 100%; height: 2px; background: var(--text); border-radius: 2px; transition: all 0.25s; flex-shrink: 0; }
     .nav-burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
     .nav-burger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
     .nav-burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
