@@ -31,6 +31,27 @@
     html { scroll-behavior: smooth; }
     body { background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; overflow-x: hidden; }
 
+    /* ── FLOATING MATH LAYER ── */
+    #mathLayer {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none; overflow: hidden;
+    }
+    .math-sym {
+      position: absolute;
+      font-family: 'Outfit', sans-serif;
+      font-style: italic;
+      color: rgba(99,102,241,0.09);
+      white-space: nowrap;
+      animation: floatUp linear infinite;
+      user-select: none;
+    }
+    @keyframes floatUp {
+      0%   { transform: translateY(110vh) rotate(var(--r)); opacity: 0; }
+      5%   { opacity: 1; }
+      95%  { opacity: 1; }
+      100% { transform: translateY(-15vh) rotate(var(--r)); opacity: 0; }
+    }
+
     /* ── CANVAS BG ── */
     #starfield { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
@@ -93,21 +114,31 @@
 
     .hero-badge {
       display: inline-flex; align-items: center; gap: 0.5rem;
-      background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.25);
+      background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3);
       color: var(--accent3); border-radius: 100px;
       font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
       letter-spacing: 0.1em; text-transform: uppercase;
       padding: 0.4rem 1rem; margin-bottom: 2rem;
       animation: fadeUp 0.5s ease forwards;
+      position: relative; overflow: hidden;
     }
-    .badge-dot { width: 6px; height: 6px; background: var(--success); border-radius: 50%; animation: pulse-dot 2s infinite; }
+    .hero-badge::after {
+      content: '';
+      position: absolute; top: 0; left: -100%;
+      width: 60%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(167,139,250,0.25), transparent);
+      animation: badgeShimmer 3s ease-in-out infinite;
+    }
+    @keyframes badgeShimmer { 0%,100%{left:-100%} 50%{left:150%} }
+
+    .badge-dot { width: 6px; height: 6px; background: var(--success); border-radius: 50%; animation: pulse-dot 2s infinite; box-shadow: 0 0 6px var(--success); }
     @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
 
     .hero-title {
       font-family: 'Outfit', sans-serif;
-      font-size: clamp(3.5rem, 8vw, 7rem);
+      font-size: clamp(3rem, 7.5vw, 7rem);
       font-weight: 900;
-      line-height: 0.95;
+      line-height: 1.0;
       letter-spacing: -0.05em;
       color: var(--text);
       margin-bottom: 1.5rem;
@@ -120,6 +151,7 @@
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
       background-size: 200% 200%;
       animation: gradientShift 4s ease infinite;
+      padding-bottom: 0.1em; /* prevent descender clipping */
     }
     @keyframes gradientShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
 
@@ -157,15 +189,24 @@
       overflow: hidden; background: var(--surface);
       animation: fadeUp 0.6s 0.4s ease both;
       max-width: 640px; margin: 0 auto;
+      box-shadow: 0 0 0 1px rgba(99,102,241,0.1), 0 8px 40px rgba(0,0,0,0.4);
+      position: relative;
+    }
+    .hero-stats::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(99,102,241,0.5), rgba(139,92,246,0.5), transparent);
     }
     .hero-stat {
       flex: 1; padding: 1.5rem 1.25rem; text-align: center;
       border-right: 1px solid var(--border);
       transition: background 0.2s;
+      position: relative;
     }
     .hero-stat:last-child { border-right: none; }
     .hero-stat:hover { background: var(--surface2); }
-    .hero-stat-num { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 900; letter-spacing: -0.04em; color: var(--text); line-height: 1; }
+    .hero-stat:hover .hero-stat-num { color: var(--accent3); }
+    .hero-stat-num { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 900; letter-spacing: -0.04em; color: var(--text); line-height: 1; transition: color 0.2s; }
     .hero-stat-num .u { color: var(--accent); }
     .hero-stat-label { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted2); margin-top: 0.3rem; }
 
@@ -194,12 +235,12 @@
       position: absolute; top: 0; left: 0; right: 0; height: 1px;
       background: linear-gradient(90deg, transparent, var(--border2), transparent);
     }
-    .features-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border-radius: 20px; overflow: hidden; border: 1px solid var(--border); }
+    .features-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border-radius: 20px; overflow: hidden; border: 1px solid var(--border2); }
     @media(max-width:768px){ .features-grid { grid-template-columns: 1fr; } }
 
     .feature-card {
       background: var(--surface); padding: 2.25rem;
-      transition: background 0.2s; position: relative; overflow: hidden;
+      transition: background 0.2s, box-shadow 0.2s; position: relative; overflow: hidden;
     }
     .feature-card::before {
       content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
@@ -208,7 +249,11 @@
     }
     .feature-card:hover { background: var(--surface2); }
     .feature-card:hover::before { background: linear-gradient(90deg, transparent, var(--accent), transparent); }
-    .feature-icon { font-size: 1.75rem; margin-bottom: 1.25rem; display: block; }
+    .feature-icon {
+      font-size: 1.75rem; margin-bottom: 1.25rem; display: block;
+      transition: transform 0.3s;
+    }
+    .feature-card:hover .feature-icon { transform: scale(1.2) rotate(-5deg); }
     .feature-title { font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 0.5rem; color: var(--text); }
     .feature-desc { font-size: 0.87rem; line-height: 1.7; color: var(--muted); }
 
@@ -390,6 +435,7 @@
 <body>
 
 <canvas id="starfield"></canvas>
+<div id="mathLayer"></div>
 
 <nav class="nav">
   <a href="/" class="nav-logo">
@@ -729,22 +775,43 @@
   resize();
   window.addEventListener('resize', resize);
 
-  const stars = Array.from({length: 120}, () => ({
+  const stars = Array.from({length: 140}, () => ({
     x: Math.random(), y: Math.random(),
-    r: Math.random() * 1.2 + 0.2,
-    a: Math.random() * 0.6 + 0.1,
-    speed: Math.random() * 0.00015 + 0.00005,
+    r: Math.random() * 1.4 + 0.3,
+    a: Math.random() * 0.7 + 0.15,
+    speed: Math.random() * 0.00012 + 0.00003,
     twinkle: Math.random() * Math.PI * 2,
   }));
 
-  function drawStars(t) {
+  // Glowing orbs
+  const orbs = [
+    { x: 0.15, y: 0.25, r: 350, c: 'rgba(99,102,241,0.13)', pulse: 0 },
+    { x: 0.85, y: 0.65, r: 400, c: 'rgba(139,92,246,0.1)', pulse: 1.5 },
+    { x: 0.5,  y: 0.05, r: 250, c: 'rgba(16,217,160,0.07)', pulse: 3 },
+  ];
+
+  let time = 0;
+  function drawStars() {
     ctx.clearRect(0, 0, W, H);
+    time += 0.008;
+
+    // Animated orbs
+    orbs.forEach(o => {
+      const scale = 1 + 0.08 * Math.sin(time + o.pulse);
+      const r = o.r * scale;
+      const g = ctx.createRadialGradient(o.x*W, o.y*H, 0, o.x*W, o.y*H, r);
+      g.addColorStop(0, o.c);
+      g.addColorStop(1, 'transparent');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+    });
+
     stars.forEach(s => {
       s.twinkle += 0.02;
-      const alpha = s.a * (0.6 + 0.4 * Math.sin(s.twinkle));
+      const alpha = s.a * (0.5 + 0.5 * Math.sin(s.twinkle));
       ctx.beginPath();
       ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(180,180,255,${alpha})`;
+      ctx.fillStyle = `rgba(190,190,255,${alpha})`;
       ctx.fill();
       s.y -= s.speed;
       if (s.y < -0.01) { s.y = 1.01; s.x = Math.random(); }
@@ -752,6 +819,26 @@
     requestAnimationFrame(drawStars);
   }
   requestAnimationFrame(drawStars);
+
+  // ── FLOATING MATH SYMBOLS ──
+  const mathSymbols = [
+    'x²', 'ax²+bx+c', '√Δ', 'y=mx+b', '∫f(x)dx',
+    'Σaₙ', '|x-3|<5', 'lim x→∞', 'f⁻¹(x)', '2x+3y=12',
+    'x=(-b±√Δ)/2a', 'P(A∩B)', 'sin²θ+cos²θ=1', 'dy/dx',
+  ];
+  const layer = document.getElementById('mathLayer');
+  mathSymbols.forEach((sym, i) => {
+    const el = document.createElement('div');
+    el.className = 'math-sym';
+    el.textContent = sym;
+    const size = Math.random() * 1.0 + 0.65;
+    const left = Math.random() * 90;
+    const dur  = Math.random() * 22 + 18;
+    const delay = Math.random() * -35;
+    const rot   = (Math.random() - 0.5) * 18;
+    el.style.cssText = `left:${left}%;font-size:${size}rem;--r:${rot}deg;animation-duration:${dur}s;animation-delay:${delay}s;`;
+    layer.appendChild(el);
+  });
 
   // ── FAQ ──
   function toggleFaq(el) { el.parentElement.classList.toggle('open'); }
