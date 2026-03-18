@@ -64,7 +64,7 @@ class SignUpRequest(BaseModel):
     username: str
 
 class SignInRequest(BaseModel):
-    email: str
+    email: str  # can be email or username
     password: str
 
 class AnswerRequest(BaseModel):
@@ -97,6 +97,11 @@ async def history_page():
 @app.post("/auth/signup")
 async def signup(req: SignUpRequest):
     try:
+        # Check username taken
+        existing_username = supabase.table("profiles").select("id").eq("username", req.username).execute()
+        if existing_username.data:
+            raise HTTPException(status_code=400, detail="Username already taken. Please choose another.")
+
         res = supabase.auth.sign_up({
             "email": req.email,
             "password": req.password,
@@ -108,6 +113,7 @@ async def signup(req: SignUpRequest):
         supabase.table("profiles").upsert({
             "id": res.user.id,
             "username": req.username,
+            "email": req.email,
             "total_correct": 0,
             "total_attempted": 0,
         }).execute()
@@ -119,14 +125,34 @@ async def signup(req: SignUpRequest):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        # Catch Supabase duplicate email error
+        err = str(e)
+        if "already registered" in err or "already been registered" in err or "User already registered" in err:
+            raise HTTPException(status_code=400, detail="Email already registered. Please sign in instead.")
+        raise HTTPException(status_code=400, detail=err)
 
 
 @app.post("/auth/signin")
 async def signin(req: SignInRequest):
     try:
+        email_to_use = req.email.strip()
+
+        # If input doesn't look like an email, treat it as a username
+        if "@" not in email_to_use:
+            # Look up email from profiles + auth.users via admin API
+            profile = supabase.table("profiles")                .select("id")                .eq("username", email_to_use)                .execute()
+            if not profile.data:
+                raise HTTPException(status_code=401, detail="Username not found.")
+            user_id = profile.data[0]["id"]
+            # Use admin client to get email
+            # Get email directly from profiles table (no admin API needed)
+            email_profile = supabase.table("profiles")                .select("email")                .eq("id", user_id)                .single()                .execute()
+            if not email_profile.data or not email_profile.data.get("email"):
+                raise HTTPException(status_code=401, detail="Could not resolve username. Please sign in with your email instead.")
+            email_to_use = email_profile.data["email"]
+
         res = supabase.auth.sign_in_with_password({
-            "email": req.email,
+            "email": email_to_use,
             "password": req.password
         })
         if res.user is None:
