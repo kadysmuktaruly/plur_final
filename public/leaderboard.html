@@ -8,179 +8,138 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        :root,     :root, [data-theme="dark"] {
-      --bg: #080810;
-      --surface: #0e0e1a;
-      --surface2: #13131f;
-      --border: #1c1c2e;
-      --accent: #6366f1;
-      --accent2: #8b5cf6;
-      --accent-glow: rgba(99,102,241,0.25);
-      --text: #eeedf5;
-      --muted: #6b6880;
-      --success: #22d3a5;
-      --error: #f43f6e;
-      --gold: #fbbf24;
-      --nav-bg: rgba(8,8,16,0.9);
+    :root, [data-theme="dark"] {
+      --bg:#080810;--surface:#0e0e1a;--surface2:#13131f;--border:#1c1c2e;
+      --accent:#6366f1;--accent2:#8b5cf6;--accent-glow:rgba(99,102,241,0.25);
+      --text:#eeedf5;--muted:#6b6880;--success:#22d3a5;--error:#f43f6e;
+      --gold:#fbbf24;--nav-bg:rgba(8,8,16,0.9);
     }
-
-        [data-theme="light"] {
-      --bg: #f1f0f7;
-      --surface: #ffffff;
-      --surface2: #eceaf6;
-      --border: #dddbe8;
-      --accent: #6366f1;
-      --accent2: #8b5cf6;
-      --accent-glow: rgba(99,102,241,0.15);
-      --text: #16151f;
-      --muted: #7b7893;
-      --success: #059669;
-      --error: #e11d48;
-      --gold: #d97706;
-      --nav-bg: rgba(241,240,247,0.92);
+    [data-theme="light"] {
+      --bg:#f1f0f7;--surface:#ffffff;--surface2:#eceaf6;--border:#dddbe8;
+      --accent:#6366f1;--accent2:#8b5cf6;--accent-glow:rgba(99,102,241,0.15);
+      --text:#16151f;--muted:#7b7893;--success:#059669;--error:#e11d48;
+      --gold:#d97706;--nav-bg:rgba(241,240,247,0.92);
     }
+    html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;}
+    body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(240,192,80,0.04) 0%,transparent 60%);pointer-events:none;}
 
-    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; }
+    /* nav */
+    nav{position:sticky;top:0;z-index:200;background:var(--nav-bg);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1.5rem;gap:0.5rem;}
+    .nav-logo{display:flex;align-items:center;gap:0.6rem;font-weight:800;font-size:0.9rem;letter-spacing:0.06em;text-transform:uppercase;font-family:'Outfit',sans-serif;flex-shrink:0;}
+    .nav-dot{width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:white;}
+    .nav-links{display:flex;gap:0.25rem;}
+    .nav-link{font-family:'JetBrains Mono',monospace;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:0.4rem 0.6rem;border-radius:6px;transition:all 0.15s;}
+    .nav-link:hover{color:var(--text);background:var(--surface);}
+    .nav-link.active{color:var(--accent);}
+    .nav-right{display:flex;align-items:center;gap:0.5rem;flex-shrink:0;}
+    .btn-signout{font-family:'JetBrains Mono',monospace;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;background:transparent;border:1px solid var(--border);color:var(--muted);padding:0.35rem 0.8rem;border-radius:6px;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+    .btn-signout:hover{border-color:var(--error);color:var(--error);}
+    .theme-btn-nav{background:var(--surface2);border:1px solid var(--border);border-radius:6px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.9rem;transition:all 0.15s;}
+    .theme-btn-nav:hover{border-color:var(--accent);}
+    .nav-burger{display:none;flex-direction:column;justify-content:center;align-items:stretch;gap:5px;width:34px;height:34px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;padding:8px 7px;flex-shrink:0;transition:border-color 0.15s;box-sizing:border-box;}
+    .nav-burger:hover{border-color:var(--accent);}
+    .nav-burger span{display:block;width:100%;height:2px;background:var(--text);border-radius:2px;transition:all 0.25s;flex-shrink:0;}
+    .nav-burger.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+    .nav-burger.open span:nth-child(2){opacity:0;transform:scaleX(0);}
+    .nav-burger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+    .nav-drawer{display:none;position:fixed;top:53px;left:0;right:0;z-index:199;background:var(--nav-bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:1rem 1.25rem 1.25rem;flex-direction:column;gap:0.25rem;animation:drawerIn 0.2s ease;}
+    .nav-drawer.open{display:flex;}
+    @keyframes drawerIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+    .drawer-link{font-family:'JetBrains Mono',monospace;font-size:0.78rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:0.75rem 0.85rem;border-radius:8px;transition:all 0.15s;}
+    .drawer-link:hover{color:var(--text);background:var(--surface);}
+    .drawer-link.active{color:var(--accent);background:rgba(99,102,241,0.07);}
+    .drawer-divider{height:1px;background:var(--border);margin:0.5rem 0;}
+    .drawer-row{display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0.25rem;}
+    .drawer-signout{font-family:'JetBrains Mono',monospace;font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;background:transparent;border:1px solid var(--border);color:var(--muted);padding:0.45rem 0.9rem;border-radius:6px;cursor:pointer;transition:all 0.15s;}
+    .drawer-signout:hover{border-color:var(--error);color:var(--error);}
+    @media(max-width:640px){.nav-links{display:none;}.nav-right{display:none;}.nav-burger{display:flex;}}
 
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(240,192,80,0.04) 0%, transparent 60%);
-      pointer-events: none;
+    /* page */
+    .page{max-width:720px;margin:0 auto;padding:2rem 1.25rem;}
+    @media(max-width:600px){.page{padding:1.25rem 0.85rem;}}
+
+    .page-header{margin-bottom:1.5rem;display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+    .page-eyebrow{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);margin-bottom:0.5rem;}
+    .page-title{font-family:'Outfit',sans-serif;font-size:2.2rem;font-weight:900;letter-spacing:-0.04em;text-transform:uppercase;}
+    .btn-friends-page{font-family:'JetBrains Mono',monospace;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:0.45rem 0.9rem;border-radius:8px;cursor:pointer;text-decoration:none;transition:all 0.15s;display:flex;align-items:center;gap:0.4rem;white-space:nowrap;}
+    .btn-friends-page:hover{border-color:var(--accent);color:var(--accent);}
+
+    /* tabs */
+    .tabs{display:flex;gap:0.35rem;margin-bottom:1rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:0.3rem;}
+    .tab-btn{flex:1;font-family:'JetBrains Mono',monospace;font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;background:transparent;border:none;color:var(--muted);padding:0.55rem 1rem;border-radius:7px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:0.45rem;}
+    .tab-btn:hover{color:var(--text);background:var(--surface2);}
+    .tab-btn.active{background:var(--accent);color:#fff;box-shadow:0 2px 12px var(--accent-glow);}
+
+    /* search */
+    .search-wrap{position:relative;margin-bottom:1.25rem;}
+    .search-icon{position:absolute;left:0.9rem;top:50%;transform:translateY(-50%);color:var(--muted);font-size:0.85rem;pointer-events:none;}
+    .search-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:0.88rem;padding:0.65rem 2.4rem 0.65rem 2.4rem;outline:none;transition:border-color 0.15s,box-shadow 0.15s;}
+    .search-input::placeholder{color:var(--muted);}
+    .search-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);}
+    .search-clear{position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;display:none;padding:0.2rem;line-height:1;}
+    .search-clear:hover{color:var(--text);}
+
+    /* podium */
+    .podium{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;margin-bottom:1.5rem;}
+    @media(max-width:400px){
+      .podium{grid-template-columns:1fr;gap:0.5rem;}
+      .podium-item{display:flex;align-items:center;gap:0.75rem;text-align:left;padding:0.9rem 1rem;}
+      .podium-medal{margin-bottom:0;font-size:1.2rem;}
     }
+    .podium-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem 1rem;text-align:center;}
+    .podium-item.rank-1{border-color:rgba(240,192,80,0.4);background:rgba(240,192,80,0.04);}
+    .podium-item.rank-2{border-color:rgba(160,174,192,0.3);}
+    .podium-item.rank-3{border-color:rgba(200,121,65,0.3);}
+    .podium-medal{font-size:1.5rem;margin-bottom:0.5rem;}
+    .podium-name{font-family:'Outfit',sans-serif;font-size:0.85rem;font-weight:700;margin-bottom:0.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .podium-score{font-family:'Outfit',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:-0.03em;}
+    .podium-acc{font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--muted);margin-top:0.2rem;}
 
-    nav {
-      position: sticky; top: 0; z-index: 200;
-      background: var(--nav-bg); backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0.75rem 1.5rem; gap: 0.5rem;
+    /* table */
+    .lb-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+    .lb-header,.lb-row{display:grid;padding:0.9rem 1.25rem;align-items:center;}
+    .lb-header{padding:0.75rem 1.25rem;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);}
+    .lb-row{border-bottom:1px solid var(--border);transition:background 0.15s;}
+    .lb-row:last-child{border-bottom:none;}
+    .lb-row:hover{background:var(--surface2);}
+    .lb-row.me{background:rgba(99,102,241,0.05);}
+    .lb-row.me:hover{background:rgba(99,102,241,0.09);}
+    @media(max-width:520px){
+      .lb-header,.lb-row{grid-template-columns:2rem 1fr 4rem 3.5rem 4rem !important;}
+      .hide-mobile{display:none !important;}
     }
-    .nav-logo { display: flex; align-items: center; gap: 0.6rem; font-weight: 800; font-size: 0.9rem; letter-spacing: 0.06em; text-transform: uppercase; font-family: 'Outfit', sans-serif; flex-shrink: 0; }
-    .nav-dot { width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; color: white; font-family: 'Outfit', sans-serif; }
-    .nav-links { display: flex; gap: 0.25rem; }
-    .nav-link { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-decoration: none; padding: 0.4rem 0.6rem; border-radius: 6px; transition: all 0.15s; }
-    .nav-link:hover { color: var(--text); background: var(--surface); }
-    .nav-link.active { color: var(--accent); }
-    .nav-right { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
-    .btn-signout { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.35rem 0.8rem; border-radius: 6px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
-    .btn-signout:hover { border-color: var(--error); color: var(--error); }
-    .theme-btn-nav { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; transition: all 0.15s; }
-    .theme-btn-nav:hover { border-color: var(--accent); }
-    /* Hamburger */
-    .nav-burger { display: none; flex-direction: column; justify-content: center; align-items: stretch; gap: 5px; width: 34px; height: 34px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; padding: 8px 7px; flex-shrink: 0; transition: border-color 0.15s; box-sizing: border-box; }
-    .nav-burger:hover { border-color: var(--accent); }
-    .nav-burger span { display: block; width: 100%; height: 2px; background: var(--text); border-radius: 2px; transition: all 0.25s; flex-shrink: 0; }
-    .nav-burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-    .nav-burger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-    .nav-burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-    /* Drawer */
-    .nav-drawer { display: none; position: fixed; top: 53px; left: 0; right: 0; z-index: 199; background: var(--nav-bg); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 1rem 1.25rem 1.25rem; flex-direction: column; gap: 0.25rem; animation: drawerIn 0.2s ease; }
-    .nav-drawer.open { display: flex; }
-    @keyframes drawerIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
-    .drawer-link { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-decoration: none; padding: 0.75rem 0.85rem; border-radius: 8px; transition: all 0.15s; }
-    .drawer-link:hover { color: var(--text); background: var(--surface); }
-    .drawer-link.active { color: var(--accent); background: rgba(99,102,241,0.07); }
-    .drawer-divider { height: 1px; background: var(--border); margin: 0.5rem 0; }
-    .drawer-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.25rem; }
-    .drawer-signout { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.45rem 0.9rem; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
-    .drawer-signout:hover { border-color: var(--error); color: var(--error); }
-    @media (max-width: 640px) {
-      .nav-links { display: none; }
-      .nav-right { display: none; }
-      .nav-burger { display: flex; }
-    }
+    .lb-rank{font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--muted);}
+    .lb-name{font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:600;}
+    .lb-name .you-tag{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--accent);background:rgba(124,106,255,0.15);padding:0.1rem 0.4rem;border-radius:4px;margin-left:0.5rem;}
+    .lb-val{font-family:'JetBrains Mono',monospace;font-size:0.85rem;text-align:right;}
+    .lb-correct{color:var(--success);}
+    .lb-pct{color:var(--muted);font-size:0.8rem;}
 
-    .page { max-width: 680px; margin: 0 auto; padding: 2rem 1.25rem; }
+    /* follow/unfollow button */
+    .btn-follow{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;padding:0.28rem 0.65rem;border-radius:6px;cursor:pointer;transition:all 0.15s;white-space:nowrap;display:flex;align-items:center;justify-content:flex-end;gap:0.3rem;border:1px solid var(--border);background:transparent;color:var(--muted);margin-left:auto;}
+    .btn-follow:hover:not(:disabled){border-color:var(--accent);color:var(--accent);}
+    .btn-follow.following{border-color:var(--success);color:var(--success);background:rgba(34,211,165,0.07);}
+    .btn-follow.following:hover:not(:disabled){border-color:var(--error);color:var(--error);background:rgba(244,63,110,0.07);}
+    .btn-follow:disabled{opacity:0.4;cursor:default;}
 
-    @media (max-width: 600px) {
-      .page { padding: 1.25rem 0.85rem; }
-    }
+    /* empty / no results */
+    .no-results{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--muted);text-align:center;padding:2.5rem 1rem;letter-spacing:0.05em;}
+    .friends-empty{text-align:center;padding:3rem 2rem;}
+    .friends-empty-icon{font-size:2.5rem;margin-bottom:0.75rem;}
+    .friends-empty-title{font-family:'Outfit',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:0.4rem;}
+    .friends-empty-sub{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--muted);}
 
-    .page-header { margin-bottom: 2rem; }
-    .page-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
-    .page-title { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 900; letter-spacing: -0.04em; text-transform: uppercase; }
+    /* loader */
+    .loader-wrap{text-align:center;padding:3rem;}
+    .spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 1rem;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .loader-txt{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
 
-    /* Top 3 podium */
-    .podium {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
-    }
-
-    @media (max-width: 400px) {
-      .podium { grid-template-columns: 1fr; gap: 0.5rem; }
-      .podium-item { display: flex; align-items: center; gap: 0.75rem; text-align: left; padding: 0.9rem 1rem; }
-      .podium-medal { margin-bottom: 0; font-size: 1.2rem; }
-      .podium-score { font-size: 1.2rem; }
-    }
-
-    .podium-item {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.25rem 1rem;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .podium-item.rank-1 { border-color: rgba(240,192,80,0.4); background: rgba(240,192,80,0.04); }
-    .podium-item.rank-2 { border-color: rgba(160,174,192,0.3); }
-    .podium-item.rank-3 { border-color: rgba(200,121,65,0.3); }
-
-    .podium-medal { font-size: 1.5rem; margin-bottom: 0.5rem; }
-    .podium-name { font-family: 'Outfit', sans-serif; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.02em; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .podium-score { font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; }
-    .podium-item.rank-1 .podium-score { font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; }
-    .podium-item.rank-2 .podium-score { font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; }
-    .podium-item.rank-3 .podium-score { font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; }
-    .podium-acc { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.05em; color: var(--muted); margin-top: 0.2rem; }
-
-    /* Table */
-    .lb-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
-
-    .lb-header { display: grid; grid-template-columns: 2.5rem 1fr 6rem 6rem 5rem; padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
-
-    .lb-row {
-      display: grid;
-      grid-template-columns: 2.5rem 1fr 6rem 6rem 5rem;
-      padding: 0.9rem 1.25rem;
-      border-bottom: 1px solid var(--border);
-      align-items: center;
-      transition: background 0.15s;
-    }
-
-    @media (max-width: 500px) {
-      .lb-header { grid-template-columns: 2rem 1fr 4.5rem 4.5rem; padding: 0.6rem 1rem; }
-      .lb-header > div:nth-child(4) { display: none; }
-      .lb-row { grid-template-columns: 2rem 1fr 4.5rem 4.5rem; padding: 0.75rem 1rem; }
-      .lb-row > div:nth-child(4) { display: none; }
-      .lb-val { font-size: 0.78rem; }
-      .lb-name { font-size: 0.82rem; }
-    }
-
-    .lb-row:last-child { border-bottom: none; }
-    .lb-row:hover { background: var(--surface2); }
-    .lb-row.me { background: rgba(124,106,255,0.06); }
-
-    .lb-rank { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--muted); font-weight: 500; }
-    .lb-name { font-family: 'Space Grotesk', sans-serif; font-size: 0.9rem; font-weight: 600; }
-    .lb-name .you-tag { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: var(--accent); background: rgba(124,106,255,0.15); padding: 0.1rem 0.4rem; border-radius: 4px; margin-left: 0.5rem; }
-    .lb-val { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; text-align: right; }
-    .lb-correct { color: var(--success); }
-    .lb-pct { color: var(--muted); font-size: 0.8rem; }
-
-    /* Loading */
-    .loader-wrap { text-align: center; padding: 3rem; }
-    .spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 1rem; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loader-txt { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
-
-    .empty { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--muted); text-align: center; padding: 2rem; }
+    /* toast */
+    .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:0.72rem;letter-spacing:0.06em;padding:0.6rem 1.2rem;border-radius:8px;opacity:0;transition:all 0.25s;pointer-events:none;z-index:999;white-space:nowrap;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+    .toast.success{border-color:var(--success);color:var(--success);}
+    .toast.error{border-color:var(--error);color:var(--error);}
   </style>
 </head>
 <body>
@@ -191,7 +150,7 @@
       <a href="/leaderboard" class="nav-link active">Leaderboard</a>
       <a href="/history-page" class="nav-link">History</a>
     </div>
-    <div class="nav-right" style="display:flex;align-items:center;gap:0.6rem">
+    <div class="nav-right">
       <button class="theme-btn-nav" id="themeBtn" onclick="toggleTheme()">🌙</button>
       <button class="btn-signout" onclick="signOut()">Sign out</button>
     </div>
@@ -212,24 +171,49 @@
 
   <div class="page">
     <div class="page-header">
-      <div class="page-eyebrow">Top Performers</div>
-      <div class="page-title">Leaderboard</div>
+      <div>
+        <div class="page-eyebrow">Top Performers</div>
+        <div class="page-title">Leaderboard</div>
+      </div>
+      <a href="/friends" class="btn-friends-page">👥 Followers &amp; Following</a>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" id="tabGlobal" onclick="switchTab('global')">
+        <span>🌍</span> Global
+      </button>
+      <button class="tab-btn" id="tabFriends" onclick="switchTab('friends')">
+        <span>👥</span> Friends
+      </button>
+    </div>
+
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="searchInput" type="text" placeholder="Search players…" oninput="onSearch()" autocomplete="off" />
+      <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
     </div>
 
     <div id="podium" class="podium" style="display:none"></div>
-
     <div class="lb-card" id="lbCard">
-      <div class="loader-wrap">
-        <div class="spinner"></div>
-        <div class="loader-txt">Loading…</div>
-      </div>
+      <div class="loader-wrap"><div class="spinner"></div><div class="loader-txt">Loading…</div></div>
     </div>
   </div>
 
+  <div class="toast" id="toast"></div>
+
   <script>
     const token = localStorage.getItem('sat_token');
-    const user = JSON.parse(localStorage.getItem('sat_user') || '{}');
+    const user  = JSON.parse(localStorage.getItem('sat_user') || '{}');
     if (!token) { window.location.replace('/'); throw new Error('redirect'); }
+
+    let currentTab    = 'global';
+    let followingSet  = new Set();
+    let cachedGlobal  = null;
+    let cachedFriends = null;
+
+    // Column layouts
+    const COLS6 = '2.5rem 1fr 5.5rem 5.5rem 4.5rem 5.5rem';
+    const COLS5 = '2.5rem 1fr 6rem 6rem 5rem';
 
     function signOut() {
       localStorage.removeItem('sat_token');
@@ -237,90 +221,250 @@
       window.location.href = '/';
     }
 
-    const medals = ['🥇','🥈','🥉'];
-    const rankClasses = ['rank-1','rank-2','rank-3'];
+    // ── Toast ─────────────────────────────────────────────────────────────────
+    let toastTimer;
+    function showToast(msg, type='') {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = 'toast show' + (type ? ' '+type : '');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.className = 'toast', 2500);
+    }
 
-    async function loadLeaderboard() {
-      try {
-        const res = await fetch('/leaderboard/data', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.status === 401) { signOut(); return; }
-        const data = await res.json();
-        const lb = data.leaderboard || [];
+    // ── Search ────────────────────────────────────────────────────────────────
+    function onSearch() {
+      const q = document.getElementById('searchInput').value;
+      document.getElementById('searchClear').style.display = q ? 'block' : 'none';
+      rerender();
+    }
+    function clearSearch() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('searchClear').style.display = 'none';
+      rerender();
+    }
+    function getQuery() { return document.getElementById('searchInput').value.trim().toLowerCase(); }
+    function filterList(lb) {
+      const q = getQuery();
+      return q ? lb.filter(u => u.username.toLowerCase().includes(q)) : lb;
+    }
 
-        // Podium (top 3)
-        const podiumEl = document.getElementById('podium');
-        if (lb.length >= 3) {
-          podiumEl.style.display = 'grid';
-          podiumEl.innerHTML = lb.slice(0, 3).map((u, i) => {
-            const pct = u.total_attempted > 0 ? Math.round((u.total_correct / u.total_attempted) * 100) : 0;
-            return `
-              <div class="podium-item ${rankClasses[i]}">
-                <div class="podium-medal">${medals[i]}</div>
-                <div class="podium-name">${u.username}</div>
-                <div class="podium-score">${u.total_correct}</div>
-                <div class="podium-acc">${pct}% acc · ${u.total_attempted} tried</div>
-              </div>`;
-          }).join('');
-        }
+    // ── Tab switch ────────────────────────────────────────────────────────────
+    function switchTab(tab) {
+      currentTab = tab;
+      document.getElementById('tabGlobal').classList.toggle('active', tab === 'global');
+      document.getElementById('tabFriends').classList.toggle('active', tab === 'friends');
+      // Reset search
+      document.getElementById('searchInput').value = '';
+      document.getElementById('searchClear').style.display = 'none';
+      document.getElementById('podium').style.display = 'none';
+      document.getElementById('podium').innerHTML = '';
 
-        // Full table (rank 4+)
-        const card = document.getElementById('lbCard');
-        if (lb.length === 0) {
-          card.innerHTML = '<div class="empty">No data yet — be the first to practice!</div>';
-          return;
-        }
-
-        card.innerHTML = `
-          <div class="lb-header">
-            <div>#</div><div>Player</div><div style="text-align:right">Correct</div><div style="text-align:right">Attempted</div><div style="text-align:right">Accuracy</div>
-          </div>
-          ${lb.map((u, i) => {
-            const pct = u.total_attempted > 0 ? Math.round((u.total_correct / u.total_attempted) * 100) : 0;
-            const isMe = u.username === user.username;
-            return `
-              <div class="lb-row${isMe ? ' me' : ''}">
-                <div class="lb-rank">${i + 1}</div>
-                <div class="lb-name">${u.username}${isMe ? '<span class="you-tag">you</span>' : ''}</div>
-                <div class="lb-val lb-correct">${u.total_correct}</div>
-                <div class="lb-val">${u.total_attempted}</div>
-                <div class="lb-val lb-pct">${pct}%</div>
-              </div>`;
-          }).join('')}
-        `;
-      } catch (e) {
-        document.getElementById('lbCard').innerHTML = `<div class="empty">Failed to load: ${e.message}</div>`;
+      if (tab === 'global') {
+        if (cachedGlobal !== null) renderAll(cachedGlobal, true);
+        else { showLoader(); loadGlobal(); }
+      } else {
+        if (cachedFriends !== null) renderAll(cachedFriends, false);
+        else { showLoader(); loadFriends(); }
       }
     }
 
-    // Theme
-    const savedTheme = localStorage.getItem('sat_theme') || 'dark';
-    applyTheme(savedTheme);
+    function rerender() {
+      if (currentTab === 'global' && cachedGlobal !== null) renderAll(cachedGlobal, true);
+      if (currentTab === 'friends' && cachedFriends !== null) renderAll(cachedFriends, false);
+    }
+
+    function showLoader() {
+      document.getElementById('lbCard').innerHTML =
+        '<div class="loader-wrap"><div class="spinner"></div><div class="loader-txt">Loading…</div></div>';
+    }
+
+    // ── Follow / Unfollow ─────────────────────────────────────────────────────
+    async function toggleFollow(username, btn) {
+      btn.disabled = true;
+      const isFollowing = followingSet.has(username);
+      try {
+        const res = await fetch(isFollowing ? '/friends/unfollow' : '/friends/follow', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username })
+        });
+        if (!res.ok) {
+          showToast((await res.json().catch(()=>({}))).detail || 'Error', 'error');
+          btn.disabled = false;
+          return;
+        }
+        if (isFollowing) {
+          followingSet.delete(username);
+          if (cachedFriends) cachedFriends = cachedFriends.filter(u => u.username !== username);
+          showToast(`Unfollowed ${username}`);
+        } else {
+          followingSet.add(username);
+          // Optimistically add to friends cache
+          if (cachedFriends !== null && cachedGlobal !== null) {
+            const entry = cachedGlobal.find(u => u.username === username);
+            if (entry) cachedFriends = [...cachedFriends, entry].sort((a,b) => b.total_correct - a.total_correct);
+          }
+          showToast(`Following ${username}!`, 'success');
+        }
+        rerender();
+      } catch(e) { showToast('Network error', 'error'); }
+      btn.disabled = false;
+    }
+
+    // ── Render ────────────────────────────────────────────────────────────────
+    const medals  = ['🥇','🥈','🥉'];
+    const rankCls = ['rank-1','rank-2','rank-3'];
+
+    function renderAll(lb, showFollow) {
+      const filtered = filterList(lb);
+      const q = getQuery();
+      // Hide podium while searching or in friends tab with <2 results
+      if (!q && lb.length >= 2) {
+        renderPodium(lb);
+      } else {
+        document.getElementById('podium').style.display = 'none';
+        document.getElementById('podium').innerHTML = '';
+      }
+      renderTable(filtered, showFollow);
+    }
+
+    function renderPodium(lb) {
+      const el = document.getElementById('podium');
+      el.style.display = 'grid';
+      el.innerHTML = lb.slice(0, Math.min(3, lb.length)).map((u, i) => {
+        const pct = u.total_attempted > 0 ? Math.round(u.total_correct / u.total_attempted * 100) : 0;
+        return `<div class="podium-item ${rankCls[i]}">
+          <div class="podium-medal">${medals[i]}</div>
+          <div class="podium-name">${esc(u.username)}</div>
+          <div class="podium-score">${u.total_correct}</div>
+          <div class="podium-acc">${pct}% acc · ${u.total_attempted} tried</div>
+        </div>`;
+      }).join('');
+    }
+
+    function renderTable(lb, showFollow) {
+      const card = document.getElementById('lbCard');
+      const q = getQuery();
+
+      if (lb.length === 0) {
+        if (q) {
+          card.innerHTML = `<div class="no-results">No players matching "<strong>${esc(q)}</strong>"</div>`;
+        } else if (currentTab === 'friends') {
+          card.innerHTML = `<div class="friends-empty">
+            <div class="friends-empty-icon">👥</div>
+            <div class="friends-empty-title">No friends yet</div>
+            <div class="friends-empty-sub">Switch to Global and follow people to see them here</div>
+          </div>`;
+        } else {
+          card.innerHTML = '<div class="no-results">No data yet — be the first to practice!</div>';
+        }
+        return;
+      }
+
+      // Global uses 6-col (with follow btn), Friends uses 6-col (with unfollow btn)
+      const cols = COLS6;
+
+      card.innerHTML = `
+        <div class="lb-header" style="grid-template-columns:${cols}">
+          <div>#</div><div>Player</div>
+          <div style="text-align:right">Correct</div>
+          <div class="hide-mobile" style="text-align:right">Attempted</div>
+          <div style="text-align:right">Acc%</div>
+          <div></div>
+        </div>
+        ${lb.map((u, i) => {
+          const pct   = u.total_attempted > 0 ? Math.round(u.total_correct / u.total_attempted * 100) : 0;
+          const isMe  = u.username === user.username;
+          const isFol = followingSet.has(u.username);
+
+          let actionCell = '<div></div>';
+          if (!isMe) {
+            if (showFollow) {
+              // Global tab: follow/unfollow toggle
+              actionCell = `<button class="btn-follow${isFol ? ' following' : ''}"
+                onclick="toggleFollow('${esc(u.username)}',this)"
+              >${isFol ? '✓ Following' : '+ Follow'}</button>`;
+            } else {
+              // Friends tab: always show unfollow
+              actionCell = `<button class="btn-follow following"
+                onclick="toggleFollow('${esc(u.username)}',this)"
+              >✓ Following</button>`;
+            }
+          }
+
+          return `<div class="lb-row${isMe?' me':''}" style="grid-template-columns:${cols}">
+            <div class="lb-rank">${i+1}</div>
+            <div class="lb-name">${esc(u.username)}${isMe?'<span class="you-tag">you</span>':''}</div>
+            <div class="lb-val lb-correct">${u.total_correct}</div>
+            <div class="lb-val hide-mobile">${u.total_attempted}</div>
+            <div class="lb-val lb-pct">${pct}%</div>
+            ${actionCell}
+          </div>`;
+        }).join('')}
+      `;
+    }
+
+    function esc(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Data ──────────────────────────────────────────────────────────────────
+    async function loadFollowing() {
+      try {
+        const res = await fetch('/friends/following', { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.ok) { const d = await res.json(); followingSet = new Set(d.following || []); }
+      } catch(e) {}
+    }
+
+    async function loadGlobal() {
+      try {
+        const res = await fetch('/leaderboard/data', { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.status === 401) { signOut(); return; }
+        cachedGlobal = (await res.json()).leaderboard || [];
+        renderAll(cachedGlobal, true);
+      } catch(e) {
+        document.getElementById('lbCard').innerHTML = `<div class="no-results">Failed to load: ${e.message}</div>`;
+      }
+    }
+
+    async function loadFriends() {
+      try {
+        const res = await fetch('/leaderboard/friends', { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.status === 401) { signOut(); return; }
+        cachedFriends = (await res.json()).leaderboard || [];
+        renderAll(cachedFriends, false);
+      } catch(e) {
+        document.getElementById('lbCard').innerHTML = `<div class="no-results">Failed to load: ${e.message}</div>`;
+      }
+    }
+
+    // ── Theme ─────────────────────────────────────────────────────────────────
+    applyTheme(localStorage.getItem('sat_theme') || 'dark');
     function applyTheme(t) {
       document.documentElement.setAttribute('data-theme', t);
-      const icon = t === 'dark' ? '🌙' : '☀️';
+      const icon = t==='dark' ? '🌙' : '☀️';
       document.getElementById('themeBtn').textContent = icon;
       const dt = document.getElementById('drawerThemeBtn');
       if (dt) dt.textContent = icon;
       localStorage.setItem('sat_theme', t);
     }
-    function toggleTheme() {
-      applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-    }
+    function toggleTheme() { applyTheme(document.documentElement.getAttribute('data-theme')==='dark' ? 'light' : 'dark'); }
     function toggleDrawer() {
       document.getElementById('navBurger').classList.toggle('open');
       document.getElementById('navDrawer').classList.toggle('open');
     }
     document.addEventListener('click', e => {
-      const drawer = document.getElementById('navDrawer');
-      const burger = document.getElementById('navBurger');
+      const drawer = document.getElementById('navDrawer'), burger = document.getElementById('navBurger');
       if (drawer.classList.contains('open') && !drawer.contains(e.target) && !burger.contains(e.target)) {
         drawer.classList.remove('open'); burger.classList.remove('open');
       }
     });
 
-    loadLeaderboard();
+    // ── Init ──────────────────────────────────────────────────────────────────
+    (async () => {
+      await loadFollowing();
+      loadGlobal();
+    })();
   </script>
 </body>
 </html>

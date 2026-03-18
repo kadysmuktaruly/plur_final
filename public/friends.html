@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SAT Algebra Tutor — Friends</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root, [data-theme="dark"] {
+      --bg:#080810;--surface:#0e0e1a;--surface2:#13131f;--border:#1c1c2e;
+      --accent:#6366f1;--accent2:#8b5cf6;--accent-glow:rgba(99,102,241,0.25);
+      --text:#eeedf5;--muted:#6b6880;--success:#22d3a5;--error:#f43f6e;
+      --gold:#fbbf24;--nav-bg:rgba(8,8,16,0.9);
+    }
+    [data-theme="light"] {
+      --bg:#f1f0f7;--surface:#ffffff;--surface2:#eceaf6;--border:#dddbe8;
+      --accent:#6366f1;--accent2:#8b5cf6;--accent-glow:rgba(99,102,241,0.15);
+      --text:#16151f;--muted:#7b7893;--success:#059669;--error:#e11d48;
+      --gold:#d97706;--nav-bg:rgba(241,240,247,0.92);
+    }
+    html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;}
+    body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(99,102,241,0.04) 0%,transparent 60%);pointer-events:none;}
+
+    /* nav */
+    nav{position:sticky;top:0;z-index:200;background:var(--nav-bg);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1.5rem;gap:0.5rem;}
+    .nav-logo{display:flex;align-items:center;gap:0.6rem;font-weight:800;font-size:0.9rem;letter-spacing:0.06em;text-transform:uppercase;font-family:'Outfit',sans-serif;flex-shrink:0;}
+    .nav-dot{width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:white;}
+    .nav-links{display:flex;gap:0.25rem;}
+    .nav-link{font-family:'JetBrains Mono',monospace;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:0.4rem 0.6rem;border-radius:6px;transition:all 0.15s;}
+    .nav-link:hover{color:var(--text);background:var(--surface);}
+    .nav-link.active{color:var(--accent);}
+    .nav-right{display:flex;align-items:center;gap:0.5rem;flex-shrink:0;}
+    .btn-signout{font-family:'JetBrains Mono',monospace;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;background:transparent;border:1px solid var(--border);color:var(--muted);padding:0.35rem 0.8rem;border-radius:6px;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+    .btn-signout:hover{border-color:var(--error);color:var(--error);}
+    .theme-btn-nav{background:var(--surface2);border:1px solid var(--border);border-radius:6px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.9rem;transition:all 0.15s;}
+    .theme-btn-nav:hover{border-color:var(--accent);}
+    .nav-burger{display:none;flex-direction:column;justify-content:center;align-items:stretch;gap:5px;width:34px;height:34px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;padding:8px 7px;flex-shrink:0;transition:border-color 0.15s;box-sizing:border-box;}
+    .nav-burger:hover{border-color:var(--accent);}
+    .nav-burger span{display:block;width:100%;height:2px;background:var(--text);border-radius:2px;transition:all 0.25s;flex-shrink:0;}
+    .nav-burger.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+    .nav-burger.open span:nth-child(2){opacity:0;transform:scaleX(0);}
+    .nav-burger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+    .nav-drawer{display:none;position:fixed;top:53px;left:0;right:0;z-index:199;background:var(--nav-bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:1rem 1.25rem 1.25rem;flex-direction:column;gap:0.25rem;animation:drawerIn 0.2s ease;}
+    .nav-drawer.open{display:flex;}
+    @keyframes drawerIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+    .drawer-link{font-family:'JetBrains Mono',monospace;font-size:0.78rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:0.75rem 0.85rem;border-radius:8px;transition:all 0.15s;}
+    .drawer-link:hover{color:var(--text);background:var(--surface);}
+    .drawer-link.active{color:var(--accent);background:rgba(99,102,241,0.07);}
+    .drawer-divider{height:1px;background:var(--border);margin:0.5rem 0;}
+    .drawer-row{display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0.25rem;}
+    .drawer-signout{font-family:'JetBrains Mono',monospace;font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;background:transparent;border:1px solid var(--border);color:var(--muted);padding:0.45rem 0.9rem;border-radius:6px;cursor:pointer;transition:all 0.15s;}
+    .drawer-signout:hover{border-color:var(--error);color:var(--error);}
+    @media(max-width:640px){.nav-links{display:none;}.nav-right{display:none;}.nav-burger{display:flex;}}
+
+    /* page */
+    .page{max-width:560px;margin:0 auto;padding:2rem 1.25rem;}
+    @media(max-width:600px){.page{padding:1.25rem 0.85rem;}}
+
+    /* profile hero */
+    .profile-hero{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.75rem 1.5rem 1.5rem;margin-bottom:1.5rem;}
+    .profile-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-size:1.6rem;font-weight:900;color:white;margin-bottom:1rem;flex-shrink:0;}
+    .profile-info{}
+    .profile-username{font-family:'Outfit',sans-serif;font-size:1.4rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:0.15rem;}
+    .profile-meta{font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--muted);letter-spacing:0.05em;}
+
+    /* stats row */
+    .stats-row{display:flex;gap:1.5rem;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);}
+    .stat{display:flex;flex-direction:column;gap:0.15rem;cursor:pointer;}
+    .stat-val{font-family:'Outfit',sans-serif;font-size:1.3rem;font-weight:800;letter-spacing:-0.03em;transition:color 0.15s;}
+    .stat:hover .stat-val{color:var(--accent);}
+    .stat-label{font-family:'JetBrains Mono',monospace;font-size:0.62rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);}
+    .stat.active .stat-val{color:var(--accent);}
+    .stat.active .stat-label{color:var(--accent);}
+
+    /* tabs */
+    .tabs{display:flex;gap:0.35rem;margin-bottom:1rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:0.3rem;}
+    .tab-btn{flex:1;font-family:'JetBrains Mono',monospace;font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;background:transparent;border:none;color:var(--muted);padding:0.55rem 1rem;border-radius:7px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:0.45rem;}
+    .tab-btn:hover{color:var(--text);background:var(--surface2);}
+    .tab-btn.active{background:var(--accent);color:#fff;box-shadow:0 2px 12px var(--accent-glow);}
+    .tab-count{background:rgba(255,255,255,0.15);border-radius:99px;padding:0.05rem 0.45rem;font-size:0.6rem;min-width:1.4rem;text-align:center;}
+    .tab-btn:not(.active) .tab-count{background:var(--surface2);color:var(--muted);}
+
+    /* search */
+    .search-wrap{position:relative;margin-bottom:1rem;}
+    .search-icon{position:absolute;left:0.9rem;top:50%;transform:translateY(-50%);color:var(--muted);font-size:0.85rem;pointer-events:none;}
+    .search-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:0.88rem;padding:0.65rem 2.4rem 0.65rem 2.4rem;outline:none;transition:border-color 0.15s,box-shadow 0.15s;}
+    .search-input::placeholder{color:var(--muted);}
+    .search-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);}
+    .search-clear{position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;display:none;padding:0.2rem;line-height:1;}
+    .search-clear:hover{color:var(--text);}
+
+    /* user list */
+    .user-list{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+    .user-row{display:flex;align-items:center;gap:0.9rem;padding:0.9rem 1.1rem;border-bottom:1px solid var(--border);transition:background 0.15s;}
+    .user-row:last-child{border-bottom:none;}
+    .user-row:hover{background:var(--surface2);}
+    .user-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-size:1rem;font-weight:800;color:white;flex-shrink:0;font-size:0.95rem;}
+    .user-info{flex:1;min-width:0;}
+    .user-name{font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .user-score{font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--muted);margin-top:0.1rem;}
+    .user-score .score-val{color:var(--success);}
+    .you-badge{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--accent);background:rgba(124,106,255,0.15);padding:0.1rem 0.4rem;border-radius:4px;margin-left:0.4rem;}
+
+    /* action buttons */
+    .btn-action{font-family:'JetBrains Mono',monospace;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;padding:0.32rem 0.75rem;border-radius:7px;cursor:pointer;transition:all 0.15s;white-space:nowrap;border:1px solid var(--border);background:transparent;color:var(--muted);flex-shrink:0;}
+    .btn-action:hover:not(:disabled){border-color:var(--accent);color:var(--accent);}
+    .btn-action.following{border-color:var(--success);color:var(--success);background:rgba(34,211,165,0.07);}
+    .btn-action.following:hover:not(:disabled){border-color:var(--error);color:var(--error);background:rgba(244,63,110,0.07);}
+    .btn-action.remove{border-color:var(--border);color:var(--muted);}
+    .btn-action.remove:hover:not(:disabled){border-color:var(--error);color:var(--error);}
+    .btn-action:disabled{opacity:0.4;cursor:default;}
+
+    /* empty / no results */
+    .list-empty{text-align:center;padding:3rem 1.5rem;}
+    .list-empty-icon{font-size:2.2rem;margin-bottom:0.75rem;}
+    .list-empty-title{font-family:'Outfit',sans-serif;font-size:1rem;font-weight:700;margin-bottom:0.35rem;}
+    .list-empty-sub{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--muted);letter-spacing:0.03em;}
+    .no-results{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--muted);text-align:center;padding:2.5rem 1rem;letter-spacing:0.05em;}
+
+    /* loader */
+    .loader-wrap{text-align:center;padding:3rem;}
+    .spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 1rem;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .loader-txt{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
+
+    /* toast */
+    .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:0.72rem;letter-spacing:0.06em;padding:0.6rem 1.2rem;border-radius:8px;opacity:0;transition:all 0.25s;pointer-events:none;z-index:999;white-space:nowrap;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+    .toast.success{border-color:var(--success);color:var(--success);}
+    .toast.error{border-color:var(--error);color:var(--error);}
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-logo"><div class="nav-dot">S</div>PLUR Tutor</div>
+    <div class="nav-links">
+      <a href="/app" class="nav-link">Practice</a>
+      <a href="/leaderboard" class="nav-link">Leaderboard</a>
+      <a href="/history-page" class="nav-link">History</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn-nav" id="themeBtn" onclick="toggleTheme()">🌙</button>
+      <button class="btn-signout" onclick="signOut()">Sign out</button>
+    </div>
+    <button class="nav-burger" id="navBurger" onclick="toggleDrawer()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+  <div class="nav-drawer" id="navDrawer">
+    <a href="/app" class="drawer-link">Practice</a>
+    <a href="/leaderboard" class="drawer-link">Leaderboard</a>
+    <a href="/history-page" class="drawer-link">History</a>
+    <div class="drawer-divider"></div>
+    <div class="drawer-row">
+      <button class="theme-btn-nav" id="drawerThemeBtn" onclick="toggleTheme()">🌙</button>
+      <button class="drawer-signout" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- Profile hero -->
+    <div class="profile-hero">
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <div class="profile-avatar" id="profileAvatar">?</div>
+        <div class="profile-info">
+          <div class="profile-username" id="profileUsername">—</div>
+          <div class="profile-meta" id="profileMeta">Loading…</div>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat active" id="statFollowing" onclick="switchTab('following')">
+          <div class="stat-val" id="statFollowingVal">—</div>
+          <div class="stat-label">Following</div>
+        </div>
+        <div class="stat" id="statFollowers" onclick="switchTab('followers')">
+          <div class="stat-val" id="statFollowersVal">—</div>
+          <div class="stat-label">Followers</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val" id="statCorrect">—</div>
+          <div class="stat-label">Correct</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val" id="statAcc">—</div>
+          <div class="stat-label">Accuracy</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" id="tabFollowing" onclick="switchTab('following')">
+        Following <span class="tab-count" id="cntFollowing">0</span>
+      </button>
+      <button class="tab-btn" id="tabFollowers" onclick="switchTab('followers')">
+        Followers <span class="tab-count" id="cntFollowers">0</span>
+      </button>
+    </div>
+
+    <!-- Search -->
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="searchInput" type="text" placeholder="Search…" oninput="onSearch()" autocomplete="off" />
+      <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
+    </div>
+
+    <!-- List -->
+    <div class="user-list" id="userList">
+      <div class="loader-wrap"><div class="spinner"></div><div class="loader-txt">Loading…</div></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const token = localStorage.getItem('sat_token');
+    const user  = JSON.parse(localStorage.getItem('sat_user') || '{}');
+    if (!token) { window.location.replace('/'); throw new Error('redirect'); }
+
+    let currentTab    = 'following';
+    let followingList = []; // full user objects {username, total_correct, total_attempted}
+    let followerList  = [];
+    let followingSet  = new Set(); // quick lookup of who we follow
+
+    // ── Toast ─────────────────────────────────────────────────────────────────
+    let toastTimer;
+    function showToast(msg, type='') {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = 'toast show' + (type ? ' '+type : '');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.className = 'toast', 2500);
+    }
+
+    function signOut() {
+      localStorage.removeItem('sat_token');
+      localStorage.removeItem('sat_user');
+      window.location.href = '/';
+    }
+
+    // ── Search ────────────────────────────────────────────────────────────────
+    function onSearch() {
+      const q = document.getElementById('searchInput').value;
+      document.getElementById('searchClear').style.display = q ? 'block' : 'none';
+      renderList();
+    }
+    function clearSearch() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('searchClear').style.display = 'none';
+      renderList();
+    }
+    function getQuery() { return document.getElementById('searchInput').value.trim().toLowerCase(); }
+
+    // ── Tab switch ────────────────────────────────────────────────────────────
+    function switchTab(tab) {
+      currentTab = tab;
+      document.getElementById('tabFollowing').classList.toggle('active', tab === 'following');
+      document.getElementById('tabFollowers').classList.toggle('active', tab === 'followers');
+      document.getElementById('statFollowing').classList.toggle('active', tab === 'following');
+      document.getElementById('statFollowers').classList.toggle('active', tab === 'followers');
+      document.getElementById('searchInput').value = '';
+      document.getElementById('searchClear').style.display = 'none';
+      renderList();
+    }
+
+    // ── Render list ───────────────────────────────────────────────────────────
+    function renderList() {
+      const list   = currentTab === 'following' ? followingList : followerList;
+      const q      = getQuery();
+      const filtered = q ? list.filter(u => u.username.toLowerCase().includes(q)) : list;
+      const el     = document.getElementById('userList');
+
+      if (filtered.length === 0) {
+        if (q) {
+          el.innerHTML = `<div class="no-results">No results for "<strong>${esc(q)}</strong>"</div>`;
+          return;
+        }
+        if (currentTab === 'following') {
+          el.innerHTML = `<div class="list-empty">
+            <div class="list-empty-icon">🔭</div>
+            <div class="list-empty-title">Not following anyone yet</div>
+            <div class="list-empty-sub">Head to the leaderboard and follow some players!</div>
+          </div>`;
+        } else {
+          el.innerHTML = `<div class="list-empty">
+            <div class="list-empty-icon">🌱</div>
+            <div class="list-empty-title">No followers yet</div>
+            <div class="list-empty-sub">Keep practising and your ranking will attract followers!</div>
+          </div>`;
+        }
+        return;
+      }
+
+      el.innerHTML = filtered.map(u => {
+        const isMe  = u.username === user.username;
+        const isFol = followingSet.has(u.username);
+        const pct   = u.total_attempted > 0 ? Math.round(u.total_correct / u.total_attempted * 100) : 0;
+        const initial = u.username.charAt(0).toUpperCase();
+
+        let actionBtn = '';
+        if (!isMe) {
+          if (currentTab === 'following') {
+            // Always following — show unfollow
+            actionBtn = `<button class="btn-action following" onclick="doUnfollow('${esc(u.username)}',this)">✓ Following</button>`;
+          } else {
+            // Followers tab — show Follow/Following toggle
+            actionBtn = isFol
+              ? `<button class="btn-action following" onclick="doUnfollow('${esc(u.username)}',this)">✓ Following</button>`
+              : `<button class="btn-action" onclick="doFollow('${esc(u.username)}',this)">+ Follow back</button>`;
+          }
+        }
+
+        return `<div class="user-row">
+          <div class="user-avatar">${initial}</div>
+          <div class="user-info">
+            <div class="user-name">${esc(u.username)}${isMe ? '<span class="you-badge">you</span>' : ''}</div>
+            <div class="user-score"><span class="score-val">${u.total_correct}</span> correct · ${pct}% acc</div>
+          </div>
+          ${actionBtn}
+        </div>`;
+      }).join('');
+    }
+
+    // ── Follow / Unfollow ─────────────────────────────────────────────────────
+    async function doFollow(username, btn) {
+      btn.disabled = true;
+      try {
+        const res = await fetch('/friends/follow', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username })
+        });
+        if (!res.ok) {
+          showToast((await res.json().catch(()=>({}))).detail || 'Error', 'error');
+          btn.disabled = false;
+          return;
+        }
+        followingSet.add(username);
+        // Add to followingList if not there
+        const entry = followerList.find(u => u.username === username);
+        if (entry && !followingList.find(u => u.username === username)) {
+          followingList.push(entry);
+          updateCounts();
+        }
+        showToast(`Following ${username}!`, 'success');
+        renderList();
+      } catch(e) { showToast('Network error', 'error'); btn.disabled = false; }
+    }
+
+    async function doUnfollow(username, btn) {
+      btn.disabled = true;
+      try {
+        const res = await fetch('/friends/unfollow', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username })
+        });
+        if (!res.ok) {
+          showToast((await res.json().catch(()=>({}))).detail || 'Error', 'error');
+          btn.disabled = false;
+          return;
+        }
+        followingSet.delete(username);
+        followingList = followingList.filter(u => u.username !== username);
+        updateCounts();
+        showToast(`Unfollowed ${username}`);
+        renderList();
+      } catch(e) { showToast('Network error', 'error'); btn.disabled = false; }
+    }
+
+    // ── Update counts ─────────────────────────────────────────────────────────
+    function updateCounts() {
+      document.getElementById('cntFollowing').textContent    = followingList.length;
+      document.getElementById('statFollowingVal').textContent = followingList.length;
+      document.getElementById('cntFollowers').textContent    = followerList.length;
+      document.getElementById('statFollowersVal').textContent = followerList.length;
+    }
+
+    // ── Load data ─────────────────────────────────────────────────────────────
+    async function loadAll() {
+      try {
+        // Load profile
+        const meRes = await fetch('/auth/me', { headers: { 'Authorization': `Bearer ${token}` } });
+        if (meRes.status === 401) { signOut(); return; }
+        const me = await meRes.json();
+
+        const pct = me.total_attempted > 0 ? Math.round(me.total_correct / me.total_attempted * 100) : 0;
+        const initial = (me.username || '?').charAt(0).toUpperCase();
+        document.getElementById('profileAvatar').textContent   = initial;
+        document.getElementById('profileUsername').textContent  = me.username || user.username || '—';
+        document.getElementById('profileMeta').textContent      = `${me.total_attempted || 0} problems attempted`;
+        document.getElementById('statCorrect').textContent      = me.total_correct || 0;
+        document.getElementById('statAcc').textContent          = pct + '%';
+
+        // Load following + followers in parallel
+        const [folRes, fwrRes] = await Promise.all([
+          fetch('/friends/following',  { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch('/friends/followers',  { headers: { 'Authorization': `Bearer ${token}` } }),
+        ]);
+
+        if (folRes.ok) {
+          const d = await folRes.json();
+          followingList = d.following_details || [];
+          followingSet  = new Set(followingList.map(u => u.username));
+        }
+        if (fwrRes.ok) {
+          const d = await fwrRes.json();
+          followerList = d.followers_details || [];
+        }
+
+        updateCounts();
+        renderList();
+      } catch(e) {
+        document.getElementById('userList').innerHTML = `<div class="no-results">Failed to load: ${e.message}</div>`;
+      }
+    }
+
+    function esc(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Theme ─────────────────────────────────────────────────────────────────
+    applyTheme(localStorage.getItem('sat_theme') || 'dark');
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      const icon = t==='dark' ? '🌙' : '☀️';
+      document.getElementById('themeBtn').textContent = icon;
+      const dt = document.getElementById('drawerThemeBtn');
+      if (dt) dt.textContent = icon;
+      localStorage.setItem('sat_theme', t);
+    }
+    function toggleTheme() { applyTheme(document.documentElement.getAttribute('data-theme')==='dark' ? 'light' : 'dark'); }
+    function toggleDrawer() {
+      document.getElementById('navBurger').classList.toggle('open');
+      document.getElementById('navDrawer').classList.toggle('open');
+    }
+    document.addEventListener('click', e => {
+      const drawer = document.getElementById('navDrawer'), burger = document.getElementById('navBurger');
+      if (drawer.classList.contains('open') && !drawer.contains(e.target) && !burger.contains(e.target)) {
+        drawer.classList.remove('open'); burger.classList.remove('open');
+      }
+    });
+
+    loadAll();
+  </script>
+</body>
+</html>

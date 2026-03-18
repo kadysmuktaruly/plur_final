@@ -70,6 +70,9 @@ class SignInRequest(BaseModel):
 class AnswerRequest(BaseModel):
     answer: str
 
+class FollowRequest(BaseModel):
+    username: str  # username to follow/unfollow
+
 
 # ── static pages ───────────────────────────────────────────────────────────────
 @app.get("/")
@@ -91,6 +94,10 @@ async def login_page():
 @app.get("/history-page")
 async def history_page():
     return FileResponse(BASE_DIR / "public" / "history.html")
+
+@app.get("/friends")
+async def friends_page():
+    return FileResponse(BASE_DIR / "public" / "friends.html")
 
 
 # ── auth endpoints ─────────────────────────────────────────────────────────────
@@ -140,13 +147,20 @@ async def signin(req: SignInRequest):
         # If input doesn't look like an email, treat it as a username
         if "@" not in email_to_use:
             # Look up email from profiles + auth.users via admin API
-            profile = supabase.table("profiles")                .select("id")                .eq("username", email_to_use)                .execute()
+            profile = supabase.table("profiles")\
+                .select("id")\
+                .eq("username", email_to_use)\
+                .execute()
             if not profile.data:
                 raise HTTPException(status_code=401, detail="Username not found.")
             user_id = profile.data[0]["id"]
             # Use admin client to get email
             # Get email directly from profiles table (no admin API needed)
-            email_profile = supabase.table("profiles")                .select("email")                .eq("id", user_id)                .single()                .execute()
+            email_profile = supabase.table("profiles")\
+                .select("email")\
+                .eq("id", user_id)\
+                .single()\
+                .execute()
             if not email_profile.data or not email_profile.data.get("email"):
                 raise HTTPException(status_code=401, detail="Could not resolve username. Please sign in with your email instead.")
             email_to_use = email_profile.data["email"]
@@ -367,7 +381,8 @@ async def stripe_webhook(request: Request):
     elif event["type"] in ("customer.subscription.deleted", "customer.subscription.paused"):
         customer_id = event["data"]["object"].get("customer")
         if customer_id:
-            supabase.table("profiles").update({"is_pro": False})                .eq("stripe_customer_id", customer_id).execute()
+            supabase.table("profiles").update({"is_pro": False})\
+                .eq("stripe_customer_id", customer_id).execute()
 
     return {"ok": True}
 
@@ -488,7 +503,10 @@ def get_next_problem_for_user(user_id: str, difficulty: str):
 @app.get("/active-session")
 async def get_active_session(user_id: str = Depends(verify_token)):
     """Return the user's current unanswered question if one exists."""
-    session = supabase.table("active_sessions")        .select("*")        .eq("user_id", user_id)        .execute()
+    session = supabase.table("active_sessions")\
+        .select("*")\
+        .eq("user_id", user_id)\
+        .execute()
     if not session.data:
         return {"question": None}
     data = session.data[0]
@@ -662,8 +680,124 @@ async def get_leaderboard(user_id: str = Depends(verify_token)):
     result = supabase.table("profiles")\
         .select("username,total_correct,total_attempted")\
         .order("total_correct", desc=True)\
-        .limit(20)\
+        .limit(50)\
         .execute()
+    return {"leaderboard": result.data or []}
+
+
+# ── friends / follow endpoints ─────────────────────────────────────────────────
+
+@app.post("/friends/follow")
+async def follow_user(req: FollowRequest, user_id: str = Depends(verify_token)):
+    """Follow another user by username."""
+    # Look up the target user's id
+    target = supabase.table("profiles")\
+        .select("id,username")\
+        .eq("username", req.username)\
+        .execute()
+    if not target.data:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    target_id = target.data[0]["id"]
+    if target_id == user_id:
+        raise HTTPException(status_code=400, detail="You cannot follow yourself")
+
+    # Upsert — silently succeeds if already following
+    supabase.table("follows").upsert({
+        "follower_id": user_id,
+        "following_id": target_id,
+    }, on_conflict="follower_id,following_id").execute()
+
+    return {"ok": True, "following": req.username}
+
+
+@app.post("/friends/unfollow")
+async def unfollow_user(req: FollowRequest, user_id: str = Depends(verify_token)):
+    """Unfollow another user by username."""
+    target = supabase.table("profiles")\
+        .select("id")\
+        .eq("username", req.username)\
+        .execute()
+    if not target.data:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    target_id = target.data[0]["id"]
+
+    supabase.table("follows")\
+        .delete()\
+        .eq("follower_id", user_id)\
+        .eq("following_id", target_id)\
+        .execute()
+
+    return {"ok": True, "unfollowed": req.username}
+
+
+@app.get("/friends/following")
+async def get_following(user_id: str = Depends(verify_token)):
+    """Return usernames + stats for everyone the current user follows."""
+    result = supabase.table("follows")\
+        .select("following_id, profiles!follows_following_id_fkey(username,total_correct,total_attempted)")\
+        .eq("follower_id", user_id)\
+        .execute()
+
+    usernames = []
+    details = []
+    for row in (result.data or []):
+        profile = row.get("profiles")
+        if profile and profile.get("username"):
+            usernames.append(profile["username"])
+            details.append({
+                "username": profile["username"],
+                "total_correct": profile.get("total_correct", 0),
+                "total_attempted": profile.get("total_attempted", 0),
+            })
+
+    return {"following": usernames, "following_details": details}
+
+
+@app.get("/friends/followers")
+async def get_followers(user_id: str = Depends(verify_token)):
+    """Return users who follow the current user, with stats."""
+    result = supabase.table("follows")\
+        .select("follower_id, profiles!follows_follower_id_fkey(username,total_correct,total_attempted)")\
+        .eq("following_id", user_id)\
+        .execute()
+
+    details = []
+    for row in (result.data or []):
+        profile = row.get("profiles")
+        if profile and profile.get("username"):
+            details.append({
+                "username": profile["username"],
+                "total_correct": profile.get("total_correct", 0),
+                "total_attempted": profile.get("total_attempted", 0),
+            })
+
+    return {"followers": [d["username"] for d in details], "followers_details": details}
+
+
+@app.get("/leaderboard/friends")
+async def get_friends_leaderboard(user_id: str = Depends(verify_token)):
+    """Return leaderboard data for the current user + people they follow."""
+    # Get IDs of everyone the user follows
+    follows_res = supabase.table("follows")\
+        .select("following_id")\
+        .eq("follower_id", user_id)\
+        .execute()
+
+    friend_ids = [row["following_id"] for row in (follows_res.data or [])]
+    # Always include the current user
+    all_ids = list(set(friend_ids + [user_id]))
+
+    if not all_ids:
+        return {"leaderboard": []}
+
+    result = supabase.table("profiles")\
+        .select("username,total_correct,total_attempted")\
+        .in_("id", all_ids)\
+        .order("total_correct", desc=True)\
+        .execute()
+
     return {"leaderboard": result.data or []}
 
 
