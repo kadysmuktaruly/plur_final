@@ -73,6 +73,13 @@ class AnswerRequest(BaseModel):
 class FollowRequest(BaseModel):
     username: str  # username to follow/unfollow
 
+class SurveyRequest(BaseModel):
+    taken_sat: str | None = None
+    current_score: int | None = None
+    target_score: int | None = None
+    exam_date_range: str | None = None
+    study_hours_per_week: str | None = None
+
 
 # ── static pages ───────────────────────────────────────────────────────────────
 @app.get("/")
@@ -99,6 +106,25 @@ async def history_page():
 async def friends_page():
     return FileResponse(BASE_DIR / "public" / "friends.html")
 
+
+@app.get("/survey")
+async def survey_page():
+    return FileResponse(BASE_DIR / "public" / "survey.html")
+
+
+# ── survey endpoint ────────────────────────────────────────────────────────────
+@app.post("/survey/complete")
+async def complete_survey(req: SurveyRequest, user_id: str = Depends(verify_token)):
+    """Save onboarding survey answers to the user's profile."""
+    update_data = {}
+    if req.taken_sat is not None: update_data["taken_sat"] = req.taken_sat
+    if req.current_score is not None: update_data["current_score"] = req.current_score
+    if req.target_score is not None: update_data["target_score"] = req.target_score
+    if req.exam_date_range is not None: update_data["exam_date_range"] = req.exam_date_range
+    if req.study_hours_per_week is not None: update_data["study_hours_per_week"] = req.study_hours_per_week
+    if update_data:
+        supabase.table("profiles").update(update_data).eq("id", user_id).execute()
+    return {"ok": True}
 
 # ── auth endpoints ─────────────────────────────────────────────────────────────
 @app.post("/auth/signup")

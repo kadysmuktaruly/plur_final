@@ -313,9 +313,95 @@
 
     /* Error */
     .err { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--error); background: rgba(255,77,109,0.08); border: 1px solid rgba(255,77,109,0.2); padding: 0.6rem 0.9rem; border-radius: 6px; margin-top: 0.75rem; display: none; }
+
+    /* ── SPLASH SCREEN ── */
+    #splash {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 1.25rem;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    #splash.hide { opacity: 0; transform: scale(1.04); pointer-events: none; }
+    .splash-logo {
+      width: 72px; height: 72px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 900; color: white;
+      animation: splashPop 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards;
+      opacity: 0;
+    }
+    @keyframes splashPop {
+      0%   { opacity:0; transform: scale(0.5) rotate(-10deg); }
+      60%  { opacity:1; transform: scale(1.08) rotate(3deg); }
+      100% { opacity:1; transform: scale(1) rotate(0deg); }
+    }
+    .splash-wordmark {
+      font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 900;
+      letter-spacing: 0.15em; text-transform: uppercase; color: var(--text);
+      opacity: 0; animation: splashFadeUp 0.5s ease 0.4s forwards;
+    }
+    .splash-sub {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+      letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted);
+      opacity: 0; animation: splashFadeUp 0.5s ease 0.55s forwards;
+    }
+    .splash-bar-wrap {
+      width: 120px; height: 2px; background: var(--border); border-radius: 99px; overflow: hidden;
+      opacity: 0; animation: splashFadeUp 0.4s ease 0.7s forwards;
+    }
+    .splash-bar {
+      height: 100%; width: 0;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 99px;
+      animation: splashLoad 0.85s cubic-bezier(0.4,0,0.2,1) 0.75s forwards;
+    }
+    @keyframes splashLoad { to { width: 100%; } }
+    @keyframes splashFadeUp {
+      from { opacity:0; transform: translateY(10px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+    nav, .layout { opacity: 0; transform: translateY(16px); }
+    nav.revealed  { animation: revealUp 0.5s cubic-bezier(0.34,1.2,0.64,1) 0.05s forwards; }
+    .layout.revealed { animation: revealUp 0.55s cubic-bezier(0.34,1.2,0.64,1) 0.18s forwards; }
+    @keyframes revealUp { to { opacity:1; transform: translateY(0); } }
+    @keyframes choiceIn {
+      from { opacity:0; transform: translateX(-12px); }
+      to   { opacity:1; transform: translateX(0); }
+    }
+    .choice.loaded { animation: choiceIn 0.3s cubic-bezier(0.34,1.2,0.64,1) both; }
+    @keyframes shakeCard {
+      0%,100% { transform: translateX(0); }
+      15% { transform: translateX(-7px); }
+      30% { transform: translateX(7px); }
+      45% { transform: translateX(-5px); }
+      60% { transform: translateX(5px); }
+      75% { transform: translateX(-3px); }
+      90% { transform: translateX(3px); }
+    }
+    .card.shake { animation: shakeCard 0.5s ease; }
+    @keyframes questionSlideIn {
+      from { opacity:0; transform: translateY(20px) scale(0.98); }
+      to   { opacity:1; transform: translateY(0) scale(1); }
+    }
+    #questionState.slide-in { animation: questionSlideIn 0.4s cubic-bezier(0.34,1.1,0.64,1) forwards; }
+    #confettiCanvas { position: fixed; inset: 0; z-index: 5000; pointer-events: none; }
+
   </style>
 </head>
 <body>
+  <!-- SPLASH SCREEN -->
+  <div id="splash">
+    <div class="splash-logo">P</div>
+    <div class="splash-wordmark">PLUR Tutor</div>
+    <div class="splash-sub">SAT Practice</div>
+    <div class="splash-bar-wrap"><div class="splash-bar"></div></div>
+  </div>
+
+  <!-- CONFETTI CANVAS -->
+  <canvas id="confettiCanvas"></canvas>
+
   <nav>
     <div class="nav-logo"><div class="nav-dot">S</div>PLUR tutor</div>
     <div class="nav-links">
@@ -528,10 +614,115 @@
     function signOut() {
       localStorage.removeItem('sat_token');
       localStorage.removeItem('sat_user');
+      sessionStorage.removeItem('plur_splash_shown');
       window.location.href = '/';
     }
 
     function show(id, d='block') { document.getElementById(id).style.display = d; }
+    // ── SPLASH + STAGGERED REVEAL ──
+    (function() {
+      const splash = document.getElementById('splash');
+      const skipSplash = sessionStorage.getItem('plur_splash_shown');
+
+      const reveal = () => {
+        document.querySelector('nav').classList.add('revealed');
+        document.querySelector('.layout').classList.add('revealed');
+      };
+
+      if (skipSplash) {
+        // Already seen this session — skip instantly
+        splash.style.display = 'none';
+        reveal();
+        return;
+      }
+
+      // First visit this session — play the full animation
+      sessionStorage.setItem('plur_splash_shown', '1');
+      const dismiss = () => {
+        splash.classList.add('hide');
+        setTimeout(() => {
+          splash.style.display = 'none';
+          reveal();
+        }, 500);
+      };
+      setTimeout(dismiss, 1650);
+    })();
+
+    // ── CONFETTI ENGINE ──
+    const confettiCanvas = document.getElementById('confettiCanvas');
+    const cctx = confettiCanvas.getContext('2d');
+    let confettiPieces = [];
+    let confettiRunning = false;
+
+    function resizeConfetti() {
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+    }
+    resizeConfetti();
+    window.addEventListener('resize', resizeConfetti);
+
+    function launchConfetti() {
+      confettiPieces = [];
+      const colors = ['#6366f1','#8b5cf6','#22d3a5','#fbbf24','#f43f6e','#60a5fa'];
+      for (let i = 0; i < 90; i++) {
+        confettiPieces.push({
+          x: Math.random() * confettiCanvas.width,
+          y: -20 - Math.random() * 100,
+          vx: (Math.random() - 0.5) * 4,
+          vy: 2 + Math.random() * 4,
+          size: 6 + Math.random() * 7,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          angle: Math.random() * Math.PI * 2,
+          spin: (Math.random() - 0.5) * 0.15,
+          shape: Math.random() > 0.5 ? 'rect' : 'circle',
+          gravity: 0.08 + Math.random() * 0.06,
+          alpha: 1,
+        });
+      }
+      if (!confettiRunning) animateConfetti();
+    }
+
+    function animateConfetti() {
+      confettiRunning = true;
+      cctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      let alive = false;
+      confettiPieces.forEach(p => {
+        p.vy += p.gravity;
+        p.x += p.vx; p.y += p.vy;
+        p.angle += p.spin;
+        if (p.y < confettiCanvas.height + 20) alive = true;
+        if (p.y > confettiCanvas.height * 0.6) p.alpha = Math.max(0, p.alpha - 0.025);
+        cctx.save();
+        cctx.globalAlpha = p.alpha;
+        cctx.fillStyle = p.color;
+        cctx.translate(p.x, p.y);
+        cctx.rotate(p.angle);
+        if (p.shape === 'rect') {
+          cctx.fillRect(-p.size/2, -p.size/4, p.size, p.size/2);
+        } else {
+          cctx.beginPath();
+          cctx.arc(0, 0, p.size/2, 0, Math.PI*2);
+          cctx.fill();
+        }
+        cctx.restore();
+      });
+      if (alive) requestAnimationFrame(animateConfetti);
+      else { confettiRunning = false; cctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height); }
+    }
+
+    // ── OVERRIDE show() TO ADD SLIDE-IN ──
+    const _origShow = show;
+    show = function(id, d='block') {
+      _origShow(id, d);
+      if (id === 'questionState') {
+        const el = document.getElementById('questionState');
+        el.classList.remove('slide-in');
+        void el.offsetWidth;
+        el.classList.add('slide-in');
+      }
+    };
+
+
 
     // ── Subscription ──
     async function checkSubscription() {
@@ -690,12 +881,17 @@
 
         const container = document.getElementById('choices');
         container.innerHTML = '';
+        let choiceIdx = 0;
         for (const [key, text] of Object.entries(data.choices)) {
           const btn = document.createElement('button');
           btn.className = 'choice';
           btn.innerHTML = `<span class="choice-key">${key}</span><span>${text}</span>`;
           btn.onclick = () => selectChoice(key, btn);
           container.appendChild(btn);
+          const delay = choiceIdx * 70;
+          btn.style.opacity = '0';
+          setTimeout(() => { btn.style.opacity = ''; btn.classList.add('loaded'); }, delay);
+          choiceIdx++;
         }
 
         if (window.MathJax) MathJax.typesetPromise([document.getElementById('questionState')]);
@@ -855,6 +1051,16 @@
           if (key === data.correct_answer) btn.classList.add(data.result === 'correct' ? 'correct' : 'reveal');
           if (key === selectedAnswer && data.result === 'incorrect') btn.classList.add('incorrect');
         });
+        // ── Animations on result ──
+        if (data.result === 'correct') {
+          launchConfetti();
+        } else {
+          const card = document.querySelector('.card');
+          card.classList.remove('shake');
+          void card.offsetWidth;
+          card.classList.add('shake');
+          setTimeout(() => card.classList.remove('shake'), 500);
+        }
 
         const panel = document.getElementById('resultPanel');
         panel.className = `result ${data.result}`;

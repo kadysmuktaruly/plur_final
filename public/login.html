@@ -722,7 +722,7 @@
         if (data.access_token) {
           localStorage.setItem('sat_token', data.access_token);
           localStorage.setItem('sat_user', JSON.stringify(data.user));
-          window.location.href = '/app';
+          window.location.href = '/survey';
         } else {
           showMsg('suMsg', 'Check your email to confirm your account, then sign in.', 'success');
           btn.disabled = false; btn.textContent = 'Create Account →';

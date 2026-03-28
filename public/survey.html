@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PLUR SAT Tutor — Let's Set You Up</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #0d0d14;
+      --paper: #f7f5f0;
+      --accent: #2563eb;
+      --accent2: #7c3aed;
+      --gold: #d97706;
+      --surface: rgba(255,255,255,0.85);
+      --border: rgba(0,0,0,0.08);
+      --muted: #6b7280;
+      --error: #dc2626;
+      --success: #059669;
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--ink);
+      color: var(--ink);
+      font-family: 'Space Grotesk', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── CANVAS BACKGROUND ── */
+    #bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+    }
+
+    /* ── PAGE ── */
+    .page {
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--paper);
+      border-radius: 24px;
+      width: 100%;
+      max-width: 580px;
+      padding: 3rem 3rem 2.5rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: -120px;
+      right: -120px;
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, rgba(37,99,235,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .card::after {
+      content: '';
+      position: absolute;
+      bottom: -80px;
+      left: -80px;
+      width: 240px;
+      height: 240px;
+      background: radial-gradient(circle, rgba(124,58,237,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ── LOGO ── */
+    .card-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .logo-mark {
+      width: 40px;
+      height: 40px;
+      background: var(--ink);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.1rem;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .logo-text {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── PROGRESS BAR ── */
+    .progress-wrap {
+      margin-bottom: 2.5rem;
+    }
+
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .progress-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .progress-fraction {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+    }
+
+    .progress-track {
+      height: 4px;
+      background: rgba(0,0,0,0.08);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 99px;
+      transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* ── STEPS ── */
+    .step {
+      display: none;
+      animation: stepIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .step.active {
+      display: block;
+    }
+
+    @keyframes stepIn {
+      from { opacity: 0; transform: translateY(18px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes stepOut {
+      from { opacity: 1; transform: translateY(0) scale(1); }
+      to   { opacity: 0; transform: translateY(-14px) scale(0.98); }
+    }
+
+    /* ── STEP HEADER ── */
+    .step-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.6rem;
+    }
+
+    .step-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.65rem;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      color: var(--ink);
+      margin-bottom: 0.5rem;
+    }
+
+    .step-sub {
+      font-size: 0.875rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    /* ── CHOICE CARDS ── */
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .choice {
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .choice::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(37,99,235,0.04), rgba(124,58,237,0.04));
+      opacity: 0;
+      transition: opacity 0.18s;
+    }
+
+    .choice:hover {
+      border-color: rgba(37,99,235,0.3);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(37,99,235,0.08);
+    }
+
+    .choice:hover::before { opacity: 1; }
+
+    .choice.selected {
+      border-color: var(--accent);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.12), 0 4px 16px rgba(37,99,235,0.1);
+    }
+
+    .choice.selected::before { opacity: 1; }
+
+    .choice-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(0,0,0,0.04);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      transition: background 0.18s;
+    }
+
+    .choice.selected .choice-icon {
+      background: linear-gradient(135deg, rgba(37,99,235,0.12), rgba(124,58,237,0.12));
+    }
+
+    .choice-body {
+      flex: 1;
+    }
+
+    .choice-label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--ink);
+      margin-bottom: 0.1rem;
+    }
+
+    .choice-desc {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .choice-check {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.18s;
+    }
+
+    .choice.selected .choice-check {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .choice.selected .choice-check::after {
+      content: '';
+      display: block;
+      width: 6px;
+      height: 10px;
+      border: 2px solid white;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg) translateY(-1px);
+    }
+
+    /* ── SCORE SLIDER ── */
+    .score-display {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .score-num {
+      font-family: 'Outfit', sans-serif;
+      font-size: 4rem;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .score-out-of {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      margin-top: 0.25rem;
+    }
+
+    .score-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 99px;
+      background: rgba(0,0,0,0.08);
+      outline: none;
+      margin-bottom: 2rem;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.35);
+      border: 3px solid white;
+      transition: transform 0.15s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:active {
+      transform: scale(1.2);
+    }
+
+    /* Range fill visual trick */
+    .range-wrap {
+      position: relative;
+      margin-bottom: 2rem;
+    }
+
+    .range-track-bg {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      height: 6px;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      pointer-events: none;
+      transition: width 0.1s;
+    }
+
+    /* ── TARGET SCORE INPUT ── */
+    .score-input-wrap {
+      position: relative;
+      margin-bottom: 2rem;
+    }
+
+    .score-input-wrap input[type="number"] {
+      width: 100%;
+      height: 56px;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      background: white;
+      padding: 0 1.25rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--ink);
+      outline: none;
+      text-align: center;
+      letter-spacing: -0.02em;
+      transition: border-color 0.18s, box-shadow 0.18s;
+      -moz-appearance: textfield;
+    }
+
+    .score-input-wrap input[type="number"]::-webkit-outer-spin-button,
+    .score-input-wrap input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+    }
+
+    .score-input-wrap input[type="number"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+    }
+
+    .score-input-hint {
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+    }
+
+    /* ── EXAM DATE ── */
+    .date-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+
+    /* ── STUDY HOURS ── */
+    .hours-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.6rem;
+      margin-bottom: 2rem;
+    }
+
+    .hour-chip {
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 0.85rem 0.5rem;
+      cursor: pointer;
+      text-align: center;
+      background: white;
+      transition: all 0.18s;
+    }
+
+    .hour-chip:hover {
+      border-color: rgba(37,99,235,0.3);
+      transform: translateY(-1px);
+    }
+
+    .hour-chip.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+    }
+
+    .hour-chip .num {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--ink);
+      line-height: 1;
+    }
+
+    .hour-chip.selected .num {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hour-chip .unit {
+      font-size: 0.62rem;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-top: 0.15rem;
+    }
+
+    /* ── FINAL STEP ── */
+    .final-icon {
+      width: 72px;
+      height: 72px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin: 0 auto 1.5rem;
+      box-shadow: 0 12px 32px rgba(37,99,235,0.3);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 12px 32px rgba(37,99,235,0.3); }
+      50% { box-shadow: 0 12px 48px rgba(124,58,237,0.4); }
+    }
+
+    .final-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2rem;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .final-sub {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    .summary-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+
+    .pill {
+      background: white;
+      border: 1.5px solid var(--border);
+      border-radius: 99px;
+      padding: 0.35rem 0.85rem;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .pill span { font-size: 0.85rem; }
+
+    /* ── BUTTONS ── */
+    .btn-row {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .btn-back {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      background: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      transition: all 0.18s;
+      flex-shrink: 0;
+      color: var(--muted);
+    }
+
+    .btn-back:hover {
+      border-color: rgba(0,0,0,0.2);
+      background: #f0efea;
+      color: var(--ink);
+    }
+
+    .btn-back:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .btn-next {
+      flex: 1;
+      height: 52px;
+      border-radius: 14px;
+      border: none;
+      background: var(--ink);
+      color: white;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-next::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .btn-next:hover::before { opacity: 1; }
+    .btn-next span { position: relative; z-index: 1; }
+
+    .btn-next.final {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      height: 56px;
+      font-size: 1rem;
+    }
+
+    .btn-next.final::before { display: none; }
+
+    .btn-next:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-next:disabled::before { display: none; }
+
+    /* ── SKIP ── */
+    .skip-link {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .skip-link a {
+      color: var(--muted);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      cursor: pointer;
+    }
+
+    .skip-link a:hover { color: var(--ink); }
+
+    @media (max-width: 640px) {
+      .card { padding: 2rem 1.5rem; border-radius: 20px; }
+      .step-title { font-size: 1.4rem; }
+      .hours-grid { grid-template-columns: repeat(3, 1fr); }
+      .date-options { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="bg"></canvas>
+
+  <div class="page">
+    <div class="card">
+      <!-- Logo -->
+      <div class="card-logo">
+        <div class="logo-mark">P</div>
+        <div class="logo-text">PLUR SAT Tutor</div>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-wrap">
+        <div class="progress-top">
+          <span class="progress-label">Setting up your profile</span>
+          <span class="progress-fraction" id="progressFraction">1 / 5</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill" style="width: 20%"></div>
+        </div>
+      </div>
+
+      <!-- ── STEP 1: Have you taken the SAT? ── -->
+      <div class="step active" id="step1">
+        <div class="step-eyebrow">Step 1 of 5</div>
+        <div class="step-title">Have you taken the SAT before?</div>
+        <div class="step-sub">This helps us understand where you're starting from.</div>
+        <div class="choices">
+          <div class="choice" onclick="selectChoice(this, 'takenSat', 'yes_once')">
+            <div class="choice-icon">🎓</div>
+            <div class="choice-body">
+              <div class="choice-label">Yes, once</div>
+              <div class="choice-desc">I have an official score to share</div>
+            </div>
+            <div class="choice-check"></div>
+          </div>
+          <div class="choice" onclick="selectChoice(this, 'takenSat', 'yes_multiple')">
+            <div class="choice-icon">🔁</div>
+            <div class="choice-body">
+              <div class="choice-label">Yes, multiple times</div>
+              <div class="choice-desc">I'll share my most recent score</div>
+            </div>
+            <div class="choice-check"></div>
+          </div>
+          <div class="choice" onclick="selectChoice(this, 'takenSat', 'no')">
+            <div class="choice-icon">✨</div>
+            <div class="choice-body">
+              <div class="choice-label">No, first time</div>
+              <div class="choice-desc">I'm preparing for my first attempt</div>
+            </div>
+            <div class="choice-check"></div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-back" disabled>←</button>
+          <button class="btn-next" id="nextBtn1" onclick="goNext(1)" disabled>
+            <span>Continue →</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── STEP 2: Current / Last Score ── -->
+      <div class="step" id="step2">
+        <div class="step-eyebrow">Step 2 of 5</div>
+        <div class="step-title" id="step2Title">What was your last SAT score?</div>
+        <div class="step-sub" id="step2Sub">Drag to set your current score. Be honest — this helps calibrate your practice.</div>
+
+        <div class="score-display">
+          <div class="score-num" id="scoreNum">1000</div>
+          <div class="score-out-of">out of 1600</div>
+        </div>
+
+        <div class="score-label-row">
+          <span>400</span>
+          <span>800</span>
+          <span>1200</span>
+          <span>1600</span>
+        </div>
+
+        <div class="range-wrap">
+          <div class="range-track-bg" id="rangeFill"></div>
+          <input type="range" id="currentScoreRange" min="400" max="1600" step="10" value="1000"
+                 oninput="updateScore(this.value)">
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-back" onclick="goBack(2)">←</button>
+          <button class="btn-next" onclick="goNext(2)">
+            <span>Continue →</span>
+          </button>
+        </div>
+        <div class="skip-link" id="step2Skip" style="display:none">
+          <a onclick="skipScore()">I don't know my score yet</a>
+        </div>
+      </div>
+
+      <!-- ── STEP 3: Target Score ── -->
+      <div class="step" id="step3">
+        <div class="step-eyebrow">Step 3 of 5</div>
+        <div class="step-title">What's your target score?</div>
+        <div class="step-sub">What score are you aiming for? We'll build your practice around it.</div>
+
+        <div class="score-input-wrap">
+          <input type="number" id="targetScoreInput" min="400" max="1600" step="10"
+                 placeholder="1400" oninput="validateTarget(this.value)" />
+          <div class="score-input-hint">Enter a score between 400 and 1600</div>
+        </div>
+
+        <div class="choices" style="margin-bottom: 1rem;">
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem;">Quick picks</div>
+          <div style="display:flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="quick-score-btn" onclick="setQuick(1200)">1200</button>
+            <button class="quick-score-btn" onclick="setQuick(1300)">1300</button>
+            <button class="quick-score-btn" onclick="setQuick(1400)">1400</button>
+            <button class="quick-score-btn" onclick="setQuick(1500)">1500</button>
+            <button class="quick-score-btn" onclick="setQuick(1550)">1550</button>
+            <button class="quick-score-btn" onclick="setQuick(1600)">1600 🎯</button>
+          </div>
+        </div>
+
+        <style>
+          .quick-score-btn {
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 0.4rem 0.75rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: white;
+            color: var(--ink);
+            transition: all 0.15s;
+          }
+          .quick-score-btn:hover, .quick-score-btn.active {
+            border-color: var(--accent);
+            background: rgba(37,99,235,0.06);
+          }
+        </style>
+
+        <div class="btn-row" style="margin-top: 1.5rem;">
+          <button class="btn-back" onclick="goBack(3)">←</button>
+          <button class="btn-next" id="nextBtn3" onclick="goNext(3)" disabled>
+            <span>Continue →</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── STEP 4: Exam Date ── -->
+      <div class="step" id="step4">
+        <div class="step-eyebrow">Step 4 of 5</div>
+        <div class="step-title">When is your exam?</div>
+        <div class="step-sub">Knowing your timeline helps us pace your prep effectively.</div>
+        <div class="choices">
+          <div class="choice" onclick="selectChoice(this, 'examDate', 'under_1month')">
+            <div class="choice-icon">🔥</div>
+            <div class="choice-body">
+              <div class="choice-label">Under 1 month</div>
+              <div class="choice-desc">Crunch time — intensive prep needed</div>
+            </div>
+            <div class="choice-check"></div>
+          </div>
+          <div class="choice" onclick="selectChoice(this, 'examDate', '1_3months')">
+            <div class="choice-icon">📅</div>
+            <div class="choice-body">
+              <div class="choice-label">1–3 months</div>
+              <div class="choice-desc">Good amount of time to build strong foundations</div>
+            </div>
+            <div class="choice-check"></div>
+          </div>
+          <div class="choice" onclick="selectChoice(this, 'examDate', '3_6months')">
+            <div class="choice-icon">🌱</div>
+            <div class="choice-body">
+              <div class="choice-label">3–6 months</div>
+              <div class="choice-desc">Plenty of time for deep mastery</div>
+            </div>
+            <div class="choice-check"></div>
+          </div>
+          <div class="choice" onclick="selectChoice(this, 'examDate', 'over_6months')">
+            <div class="choice-icon">🚀</div>
+            <div class="choice-body">
+              <div class="choice-label">6+ months away</div>
+              <div class="choice-desc">Head start — let's build a solid plan</div>
+            </div>
+            <div class="choice-check"></div>
+          </div>
+          <div class="choice" onclick="selectChoice(this, 'examDate', 'no_date')">
+            <div class="choice-icon">💭</div>
+            <div class="choice-body">
+              <div class="choice-label">Not sure yet</div>
+              <div class="choice-desc">Just exploring for now</div>
+            </div>
+            <div class="choice-check"></div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-back" onclick="goBack(4)">←</button>
+          <button class="btn-next" id="nextBtn4" onclick="goNext(4)" disabled>
+            <span>Continue →</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── STEP 5: Study Hours ── -->
+      <div class="step" id="step5">
+        <div class="step-eyebrow">Step 5 of 5</div>
+        <div class="step-title">How many hours per week can you study?</div>
+        <div class="step-sub">Be realistic — consistency beats intensity every time.</div>
+        <div class="hours-grid">
+          <div class="hour-chip" onclick="selectHours(this, '1')">
+            <div class="num">1</div>
+            <div class="unit">hr/wk</div>
+          </div>
+          <div class="hour-chip" onclick="selectHours(this, '2')">
+            <div class="num">2</div>
+            <div class="unit">hrs/wk</div>
+          </div>
+          <div class="hour-chip" onclick="selectHours(this, '3')">
+            <div class="num">3</div>
+            <div class="unit">hrs/wk</div>
+          </div>
+          <div class="hour-chip" onclick="selectHours(this, '5')">
+            <div class="num">5</div>
+            <div class="unit">hrs/wk</div>
+          </div>
+          <div class="hour-chip" onclick="selectHours(this, '7')">
+            <div class="num">7</div>
+            <div class="unit">hrs/wk</div>
+          </div>
+          <div class="hour-chip" onclick="selectHours(this, '10')">
+            <div class="num">10</div>
+            <div class="unit">hrs/wk</div>
+          </div>
+          <div class="hour-chip" onclick="selectHours(this, '14')">
+            <div class="num">14</div>
+            <div class="unit">hrs/wk</div>
+          </div>
+          <div class="hour-chip" onclick="selectHours(this, '20+')">
+            <div class="num">20+</div>
+            <div class="unit">hrs/wk</div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-back" onclick="goBack(5)">←</button>
+          <button class="btn-next final" id="nextBtn5" onclick="finishSurvey()" disabled>
+            <span>Start My Journey 🎯</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── FINAL: All set! ── -->
+      <div class="step" id="stepFinal">
+        <div class="final-icon">🎯</div>
+        <div class="final-title">You're all set!</div>
+        <div class="final-sub" id="finalSub">Your personalized SAT prep profile is ready. Let's get that score up.</div>
+        <div class="summary-pills" id="summaryPills"></div>
+        <button class="btn-next final" style="width:100%" onclick="launchApp()">
+          <span>Let's Go →</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ── REDIRECT IF NOT LOGGED IN ──
+    if (!localStorage.getItem('sat_token')) window.location.href = '/login';
+
+    // ── CANVAS BACKGROUND ──
+    const canvas = document.getElementById('bg');
+    const ctx = canvas.getContext('2d');
+    let W, H, particles = [];
+
+    function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+    resize(); window.addEventListener('resize', resize);
+
+    function drawBg() {
+      const grad = ctx.createRadialGradient(W*0.3, H*0.3, 0, W*0.5, H*0.5, W*0.8);
+      grad.addColorStop(0, '#0f1424'); grad.addColorStop(0.5, '#0a0d18'); grad.addColorStop(1, '#060810');
+      ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = 'rgba(255,255,255,0.025)'; ctx.lineWidth = 1;
+      const gs = 60;
+      for (let x = 0; x < W; x += gs) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+      for (let y = 0; y < H; y += gs) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+      const orbs = [
+        { x:W*0.15, y:H*0.25, r:250, c:'rgba(37,99,235,0.12)' },
+        { x:W*0.7,  y:H*0.7,  r:300, c:'rgba(124,58,237,0.1)' },
+      ];
+      orbs.forEach(o => {
+        const g = ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r);
+        g.addColorStop(0,o.c); g.addColorStop(1,'transparent');
+        ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+      });
+    }
+
+    class Particle {
+      constructor() { this.reset(); }
+      reset() {
+        this.x = Math.random()*W; this.y = Math.random()*H;
+        this.vx = (Math.random()-0.5)*0.3; this.vy = (Math.random()-0.5)*0.3;
+        this.r = Math.random()*1.5+0.5; this.alpha = Math.random()*0.5+0.1;
+      }
+      update() { this.x+=this.vx; this.y+=this.vy; if(this.x<0||this.x>W||this.y<0||this.y>H) this.reset(); }
+      draw() { ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2); ctx.fillStyle=`rgba(150,180,255,${this.alpha})`; ctx.fill(); }
+    }
+
+    for (let i = 0; i < 60; i++) particles.push(new Particle());
+
+    function animate() {
+      requestAnimationFrame(animate); drawBg();
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i+1; j < particles.length; j++) {
+          const dx = particles[i].x-particles[j].x, dy = particles[i].y-particles[j].y;
+          const d = Math.sqrt(dx*dx+dy*dy);
+          if (d < 100) { ctx.strokeStyle=`rgba(100,150,255,${0.12*(1-d/100)})`; ctx.beginPath(); ctx.moveTo(particles[i].x,particles[i].y); ctx.lineTo(particles[j].x,particles[j].y); ctx.stroke(); }
+        }
+      }
+      particles.forEach(p => { p.update(); p.draw(); });
+    }
+    animate();
+
+    // ── SURVEY STATE ──
+    const answers = {
+      takenSat: null,
+      currentScore: 1000,
+      targetScore: null,
+      examDate: null,
+      studyHours: null,
+    };
+
+    let currentStep = 1;
+    const TOTAL_STEPS = 5;
+
+    // ── CHOICE SELECTION ──
+    function selectChoice(el, key, value) {
+      const group = el.parentElement;
+      group.querySelectorAll('.choice').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      answers[key] = value;
+
+      // Enable next button for this step
+      const stepNum = parseInt(el.closest('.step').id.replace('step',''));
+      const nextBtn = document.getElementById('nextBtn' + stepNum);
+      if (nextBtn) nextBtn.disabled = false;
+
+      // Step 2: if no score, show skip
+      if (key === 'takenSat') {
+        const isNew = value === 'no';
+        document.getElementById('step2Title').textContent = isNew ? 'What\'s your estimated score range?' : 'What was your last SAT score?';
+        document.getElementById('step2Sub').textContent = isNew ? 'Make your best guess — you can always update it later.' : 'Drag to set your most recent score.';
+        document.getElementById('step2Skip').style.display = isNew ? 'block' : 'none';
+      }
+    }
+
+    function selectHours(el, value) {
+      document.querySelectorAll('.hour-chip').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      answers.studyHours = value;
+      document.getElementById('nextBtn5').disabled = false;
+    }
+
+    // ── SCORE SLIDER ──
+    function updateScore(val) {
+      answers.currentScore = parseInt(val);
+      document.getElementById('scoreNum').textContent = val;
+      const pct = ((val - 400) / (1600 - 400)) * 100;
+      document.getElementById('rangeFill').style.width = pct + '%';
+    }
+
+    // Init fill on load
+    updateScore(1000);
+
+    // ── TARGET SCORE INPUT ──
+    function validateTarget(val) {
+      const n = parseInt(val);
+      const btn = document.getElementById('nextBtn3');
+      if (n >= 400 && n <= 1600) {
+        answers.targetScore = n;
+        btn.disabled = false;
+        document.querySelectorAll('.quick-score-btn').forEach(b => b.classList.remove('active'));
+      } else {
+        btn.disabled = true;
+      }
+    }
+
+    function setQuick(val) {
+      document.getElementById('targetScoreInput').value = val;
+      document.querySelectorAll('.quick-score-btn').forEach(b => {
+        b.classList.toggle('active', parseInt(b.textContent) === val || b.textContent.startsWith(val+''));
+      });
+      validateTarget(val);
+    }
+
+    function skipScore() {
+      answers.currentScore = null;
+      goNext(2);
+    }
+
+    // ── NAVIGATION ──
+    function updateProgress(step) {
+      const frac = Math.min(step, TOTAL_STEPS);
+      document.getElementById('progressFraction').textContent = frac + ' / ' + TOTAL_STEPS;
+      document.getElementById('progressFill').style.width = (frac / TOTAL_STEPS * 100) + '%';
+    }
+
+    function goNext(fromStep) {
+      // Validate
+      if (fromStep === 2) answers.currentScore = parseInt(document.getElementById('currentScoreRange').value);
+
+      const current = document.getElementById('step' + fromStep);
+      const next = document.getElementById('step' + (fromStep + 1));
+      if (!next) return;
+
+      current.style.animation = 'stepOut 0.25s ease forwards';
+      setTimeout(() => {
+        current.classList.remove('active');
+        current.style.animation = '';
+        next.classList.add('active');
+        currentStep = fromStep + 1;
+        updateProgress(currentStep);
+      }, 220);
+    }
+
+    function goBack(fromStep) {
+      const current = document.getElementById('step' + fromStep);
+      const prev = document.getElementById('step' + (fromStep - 1));
+      if (!prev) return;
+      current.style.animation = 'stepOut 0.25s ease forwards';
+      setTimeout(() => {
+        current.classList.remove('active');
+        current.style.animation = '';
+        prev.classList.add('active');
+        currentStep = fromStep - 1;
+        updateProgress(currentStep);
+      }, 220);
+    }
+
+    // ── FINISH SURVEY ──
+    async function finishSurvey() {
+      // Save to backend
+      const token = localStorage.getItem('sat_token');
+      try {
+        await fetch('/survey/complete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({
+            taken_sat: answers.takenSat,
+            current_score: answers.currentScore,
+            target_score: answers.targetScore,
+            exam_date_range: answers.examDate,
+            study_hours_per_week: answers.studyHours,
+          })
+        });
+      } catch (e) {
+        // Non-blocking — continue even if backend fails
+        console.warn('Survey save failed:', e);
+      }
+
+      // Also cache locally
+      localStorage.setItem('sat_survey', JSON.stringify(answers));
+
+      // Show final
+      const step5 = document.getElementById('step5');
+      step5.style.animation = 'stepOut 0.25s ease forwards';
+      setTimeout(() => {
+        step5.classList.remove('active');
+        step5.style.animation = '';
+        buildSummary();
+        document.getElementById('stepFinal').classList.add('active');
+        document.getElementById('progressFill').style.width = '100%';
+        document.getElementById('progressFraction').textContent = '✓ Complete';
+      }, 220);
+    }
+
+    function buildSummary() {
+      const pills = document.getElementById('summaryPills');
+      const items = [];
+
+      if (answers.takenSat === 'no') items.push({ icon: '✨', label: 'First timer' });
+      else if (answers.takenSat === 'yes_once') items.push({ icon: '🎓', label: 'Taken once' });
+      else items.push({ icon: '🔁', label: 'Taken multiple times' });
+
+      if (answers.currentScore) items.push({ icon: '📊', label: `Current: ${answers.currentScore}` });
+      if (answers.targetScore) items.push({ icon: '🎯', label: `Goal: ${answers.targetScore}` });
+
+      const dateMap = { under_1month:'< 1 month', '1_3months':'1–3 months', '3_6months':'3–6 months', over_6months:'6+ months', no_date:'Flexible' };
+      if (answers.examDate) items.push({ icon: '📅', label: dateMap[answers.examDate] || answers.examDate });
+
+      if (answers.studyHours) items.push({ icon: '⏱', label: `${answers.studyHours} hrs/week` });
+
+      pills.innerHTML = items.map(i =>
+        `<div class="pill"><span>${i.icon}</span>${i.label}</div>`
+      ).join('');
+
+      // Personalize final message
+      if (answers.targetScore && answers.currentScore && answers.targetScore > answers.currentScore) {
+        const gap = answers.targetScore - answers.currentScore;
+        document.getElementById('finalSub').textContent = `You're aiming to improve by ${gap} points. That's ambitious — we're here for it.`;
+      }
+    }
+
+    function launchApp() {
+      window.location.href = '/app';
+    }
+  </script>
+</body>
+</html>
