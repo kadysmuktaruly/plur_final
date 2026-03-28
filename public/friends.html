@@ -211,6 +211,41 @@
     <div class="user-list" id="userList">
       <div class="loader-wrap"><div class="spinner"></div><div class="loader-txt">Loading…</div></div>
     </div>
+
+    <!-- Danger zone -->
+    <div style="margin-top:2rem;background:var(--surface);border:1px solid rgba(244,63,110,0.2);border-radius:14px;padding:1.25rem 1.5rem;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--error);opacity:0.7;margin-bottom:0.75rem;">Danger Zone</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+        <div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.88rem;font-weight:600;margin-bottom:0.2rem;">Delete Account</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--muted);">Permanently remove your account and all data.</div>
+        </div>
+        <button onclick="openDeleteModal()" style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;background:transparent;border:1px solid rgba(244,63,110,0.4);color:var(--error);padding:0.5rem 1.1rem;border-radius:8px;cursor:pointer;transition:all 0.15s;white-space:nowrap;flex-shrink:0;" onmouseover="this.style.background='rgba(244,63,110,0.08)';this.style.borderColor='var(--error)'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(244,63,110,0.4)'">Delete Account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Account Modal -->
+  <div id="deleteAccountModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(4px);">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:2.25rem;max-width:360px;width:90%;text-align:center;position:relative;">
+      <div style="font-size:2.2rem;margin-bottom:0.85rem;">⚠️</div>
+      <div style="font-family:'Outfit',sans-serif;font-size:1.2rem;font-weight:900;letter-spacing:-0.02em;text-transform:uppercase;color:var(--error);margin-bottom:0.6rem;">Delete Account</div>
+      <div style="font-family:'Space Grotesk',sans-serif;font-size:0.85rem;color:var(--muted);line-height:1.6;margin-bottom:1.5rem;">This will permanently delete your account, all answers, score history, and progress. <strong style="color:var(--text)">This cannot be undone.</strong></div>
+      <p style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--muted);margin-bottom:0.6rem;">Type <strong style="color:var(--text)">DELETE</strong> to confirm:</p>
+      <input id="deleteConfirmInput" type="text" placeholder="DELETE" autocomplete="off"
+        style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.6rem 0.9rem;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:0.85rem;outline:none;margin-bottom:0.75rem;transition:border-color 0.15s;box-sizing:border-box;"
+        oninput="onDeleteInput()" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+      <p style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--muted);margin-bottom:0.6rem;">Enter your <strong style="color:var(--text)">password</strong> to confirm:</p>
+      <input id="deletePasswordInput" type="password" placeholder="Your password" autocomplete="current-password"
+        style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.6rem 0.9rem;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:0.85rem;outline:none;margin-bottom:1rem;transition:border-color 0.15s;box-sizing:border-box;"
+        oninput="onDeleteInput()" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+      <div id="deleteErrMsg" style="color:var(--error);font-family:'JetBrains Mono',monospace;font-size:0.7rem;margin-bottom:0.75rem;display:none;"></div>
+      <button id="deleteConfirmBtn" disabled onclick="confirmDeleteAccount()"
+        style="width:100%;background:var(--error);color:white;border:none;border-radius:10px;padding:0.75rem;font-family:'Outfit',sans-serif;font-size:0.82rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;opacity:0.35;transition:opacity 0.15s;margin-bottom:0.75rem;">
+        Delete My Account Forever
+      </button>
+      <button onclick="closeDeleteModal()" style="background:none;border:none;font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--muted);cursor:pointer;letter-spacing:0.05em;padding:0.25rem 0.5rem;transition:color 0.15s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">Cancel</button>
+    </div>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -442,6 +477,63 @@
       if (drawer.classList.contains('open') && !drawer.contains(e.target) && !burger.contains(e.target)) {
         drawer.classList.remove('open'); burger.classList.remove('open');
       }
+    });
+
+    // ── Delete Account ────────────────────────────────────────────────────────
+    function openDeleteModal() {
+      const modal = document.getElementById('deleteAccountModal');
+      document.getElementById('deleteConfirmInput').value = '';
+      document.getElementById('deletePasswordInput').value = '';
+      document.getElementById('deleteConfirmBtn').disabled = true;
+      document.getElementById('deleteConfirmBtn').style.opacity = '0.35';
+      document.getElementById('deleteErrMsg').style.display = 'none';
+      modal.style.display = 'flex';
+      setTimeout(() => document.getElementById('deleteConfirmInput').focus(), 50);
+    }
+    function closeDeleteModal() {
+      document.getElementById('deleteAccountModal').style.display = 'none';
+    }
+    function onDeleteInput() {
+      const word = document.getElementById('deleteConfirmInput').value;
+      const pass = document.getElementById('deletePasswordInput').value;
+      const btn = document.getElementById('deleteConfirmBtn');
+      const ready = word === 'DELETE' && pass.length > 0;
+      btn.disabled = !ready;
+      btn.style.opacity = ready ? '1' : '0.35';
+      btn.style.cursor = ready ? 'pointer' : 'default';
+    }
+    async function confirmDeleteAccount() {
+      const btn = document.getElementById('deleteConfirmBtn');
+      const errEl = document.getElementById('deleteErrMsg');
+      const password = document.getElementById('deletePasswordInput').value;
+      btn.disabled = true;
+      btn.textContent = 'Deleting…';
+      errEl.style.display = 'none';
+      try {
+        const res = await fetch('/auth/account', {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.detail || 'Deletion failed. Please try again.');
+        }
+        localStorage.removeItem('sat_token');
+        localStorage.removeItem('sat_user');
+        sessionStorage.removeItem('plur_splash_shown');
+        window.location.href = '/';
+      } catch(e) {
+        errEl.textContent = e.message;
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Delete My Account Forever';
+        btn.style.opacity = '1';
+      }
+    }
+    // Close modal on backdrop click
+    document.getElementById('deleteAccountModal').addEventListener('click', function(e) {
+      if (e.target === this) closeDeleteModal();
     });
 
     loadAll();

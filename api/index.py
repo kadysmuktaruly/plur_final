@@ -836,3 +836,67 @@ async def get_history(user_id: str = Depends(verify_token)):
         .limit(50)\
         .execute()
     return {"history": result.data or []}
+
+
+class DeleteAccountRequest(BaseModel):
+    password: str
+
+@app.delete("/auth/account")
+async def delete_account(req: DeleteAccountRequest, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Permanently delete the authenticated user's account and all associated data."""
+    import httpx
+
+    # Verify token and get user_id
+    token = credentials.credentials
+    try:
+        response = supabase.auth.get_user(token)
+        if response.user is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        user_id = response.user.id
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    # Re-authenticate with password to confirm identity
+    try:
+        profile = supabase.table("profiles").select("email").eq("id", user_id).single().execute()
+        if not profile.data or not profile.data.get("email"):
+            raise HTTPException(status_code=400, detail="Could not retrieve account email.")
+        email = profile.data["email"]
+
+        auth_check = supabase.auth.sign_in_with_password({"email": email, "password": req.password})
+        if auth_check.user is None:
+            raise HTTPException(status_code=401, detail="Incorrect password.")
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=401, detail="Incorrect password.")
+
+    # Delete all user data in dependency order
+    try:
+        supabase.table("active_sessions").delete().eq("user_id", user_id).execute()
+        supabase.table("score_history").delete().eq("user_id", user_id).execute()
+        supabase.table("user_problem_answers").delete().eq("user_id", user_id).execute()
+        supabase.table("follows").delete().eq("follower_id", user_id).execute()
+        supabase.table("follows").delete().eq("following_id", user_id).execute()
+        supabase.table("profiles").delete().eq("id", user_id).execute()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete user data: {str(e)}")
+
+    # Delete the auth user via direct Supabase Admin REST API
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.delete(
+                f"{SUPABASE_URL}/auth/v1/admin/users/{user_id}",
+                headers={
+                    "apikey": SUPABASE_SERVICE_KEY,
+                    "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
+                },
+            )
+        if resp.status_code not in (200, 204):
+            raise HTTPException(status_code=500, detail=f"Auth deletion failed: {resp.text}")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Auth deletion failed: {str(e)}")
+
+    return {"ok": True}
