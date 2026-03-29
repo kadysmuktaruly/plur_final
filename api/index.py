@@ -138,23 +138,46 @@ async def signup(req: SignUpRequest):
         res = supabase.auth.sign_up({
             "email": req.email,
             "password": req.password,
-            "options": {"data": {"username": req.username}}
+            "options": {
+                "data": {"username": req.username},
+                "email_redirect_to": f"{SITE_URL}/login",
+            }
         })
         if res.user is None:
             raise HTTPException(status_code=400, detail="Signup failed")
 
-        supabase.table("profiles").upsert({
-            "id": res.user.id,
-            "username": req.username,
-            "email": req.email,
-            "total_correct": 0,
-            "total_attempted": 0,
-        }).execute()
+        # Username is stored in auth user_metadata (passed via `data` above).
+        # We create the profile row either:
+        #   a) right now if email confirmation is OFF (session exists), or
+        #   b) on first sign-in after the user confirms their email.
+        # This avoids RLS errors when trying to insert for an unconfirmed user.
+        if res.session:
+            supabase.table("profiles").upsert({
+                "id": res.user.id,
+                "username": req.username,
+                "email": req.email,
+                "total_correct": 0,
+                "total_attempted": 0,
+            }).execute()
 
-        return {
-            "access_token": res.session.access_token if res.session else None,
-            "user": {"id": res.user.id, "email": res.user.email, "username": req.username}
-        }
+        # Only return an access_token if Supabase granted a session
+        # (i.e. email confirmation is disabled — not recommended for production).
+        # When email confirmation IS enabled, session is None here and the
+        # frontend should show a "check your email" message instead of logging in.
+        if res.session and res.session.access_token:
+            # Email confirmation is disabled — log user in immediately
+            return {
+                "access_token": res.session.access_token,
+                "user": {"id": res.user.id, "email": res.user.email, "username": req.username}
+            }
+        else:
+            # Email confirmation is enabled (recommended) — ask user to verify
+            return {
+                "access_token": None,
+                "email_confirmation_required": True,
+                "user": {"id": res.user.id, "email": res.user.email, "username": req.username}
+            }
+
     except HTTPException:
         raise
     except Exception as e:
@@ -199,10 +222,27 @@ async def signin(req: SignInRequest):
             raise HTTPException(status_code=401, detail="Invalid credentials")
 
         try:
-            profile = supabase.table("profiles").select("username").eq("id", res.user.id).single().execute()
+            profile = supabase.table("profiles").select("username,email").eq("id", res.user.id).single().execute()
             username = profile.data.get("username", "") if profile.data else ""
         except Exception:
-            username = res.user.email.split("@")[0]
+            profile = None
+            username = ""
+
+        # Lazy profile creation: if no profile row exists yet (user signed up
+        # with email confirmation enabled), create it now using the username
+        # stored in auth user_metadata during signup.
+        if not username:
+            meta_username = ""
+            if res.user.user_metadata:
+                meta_username = res.user.user_metadata.get("username", "")
+            username = meta_username or res.user.email.split("@")[0]
+            supabase.table("profiles").upsert({
+                "id": res.user.id,
+                "username": username,
+                "email": res.user.email,
+                "total_correct": 0,
+                "total_attempted": 0,
+            }).execute()
 
         return {
             "access_token": res.session.access_token,

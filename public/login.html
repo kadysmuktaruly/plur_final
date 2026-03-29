@@ -709,6 +709,12 @@
       const password = document.getElementById('suPassword').value;
       if (!username || !email || !password) return showMsg('suMsg', 'Please fill in all fields.', 'error');
       if (password.length < 6) return showMsg('suMsg', 'Password must be at least 6 characters.', 'error');
+
+      // Basic email format check before even hitting the server
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return showMsg('suMsg', 'Please enter a valid email address.', 'error');
+      }
+
       const btn = document.getElementById('suBtn');
       btn.disabled = true; btn.textContent = 'Creating account…';
       try {
@@ -719,18 +725,43 @@
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || 'Sign up failed');
+
         if (data.access_token) {
+          // Email confirmation disabled (dev mode) — log in immediately
           localStorage.setItem('sat_token', data.access_token);
           localStorage.setItem('sat_user', JSON.stringify(data.user));
           window.location.href = '/survey';
         } else {
-          showMsg('suMsg', 'Check your email to confirm your account, then sign in.', 'success');
-          btn.disabled = false; btn.textContent = 'Create Account →';
+          // Email confirmation required — show confirmation screen
+          showEmailConfirmation(email);
         }
       } catch (e) {
         showMsg('suMsg', e.message, 'error');
         btn.disabled = false; btn.textContent = 'Create Account →';
       }
+    }
+
+    function showEmailConfirmation(email) {
+      const card = document.querySelector('.panel');
+      card.innerHTML = `
+        <div style="text-align:center;padding:2rem 1rem;">
+          <div style="font-size:3rem;margin-bottom:1rem;">📧</div>
+          <h2 style="color:#e8eaf6;font-size:1.4rem;margin-bottom:0.75rem;">Check your email</h2>
+          <p style="color:#9fa8c7;line-height:1.6;margin-bottom:1.5rem;">
+            We sent a confirmation link to<br>
+            <strong style="color:#7b8cde">${email}</strong>
+          </p>
+          <p style="color:#9fa8c7;font-size:0.875rem;line-height:1.6;margin-bottom:2rem;">
+            Click the link in the email to activate your account, then come back here to sign in.
+          </p>
+          <button class="btn-primary" onclick="window.location.href='/login'" style="width:100%">
+            Go to Sign In →
+          </button>
+          <p style="color:#6b7399;font-size:0.8rem;margin-top:1.25rem;">
+            Didn't receive it? Check your spam folder.
+          </p>
+        </div>
+      `;
     }
 
     function googleAuth() { window.location.href = '/auth/google'; }
