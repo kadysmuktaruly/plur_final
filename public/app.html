@@ -653,6 +653,7 @@
     syncDiffBtns();
     setTimeout(loadPoolStatus, 100);
     checkSubscription();
+    loadInitialScore();
 
     // Handle return from Stripe
     const urlParams = new URLSearchParams(window.location.search);
@@ -829,6 +830,17 @@
         isPro = data.is_pro;
         totalAttempted = data.total_attempted;
         updateProBadge();
+      } catch(_) {}
+    }
+
+    async function loadInitialScore() {
+      try {
+        const res = await fetch('/auth/me', { headers: authHeaders() });
+        if (!res.ok) return;
+        const data = await res.json();
+        sessionCorrect = data.total_correct || 0;
+        sessionTotal = data.total_attempted || 0;
+        updateScore();
       } catch(_) {}
     }
 

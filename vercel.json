@@ -8,107 +8,33 @@
     {
       "src": "public/**",
       "use": "@vercel/static"
-    },
-    {
-      "src": "public/history.html",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "public/login.html",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
-    {
-      "src": "/auth/(.*)",
-      "dest": "api/index.py"
-    },
-    {
-      "src": "/problem",
-      "dest": "api/index.py"
-    },
-    {
-      "src": "/answer",
-      "dest": "api/index.py"
-    },
-    {
-      "src": "/leaderboard/data",
-      "dest": "api/index.py"
-    },
-    {
-      "src": "/history",
-      "dest": "api/index.py"
-    },
-    {
-      "src": "/pool/status",
-      "dest": "api/index.py"
-    },
-    {
-      "src": "/session/clear",
-      "dest": "api/index.py"
-    },
-    {
-      "src": "/history-page",
-      "dest": "/public/history.html"
-    },
-    {
-      "src": "/subscription/status",
-      "dest": "api/index.py"
-    },
-    {
-      "src": "/stripe/(.*)",
-      "dest": "api/index.py"
-    },
-    {
-      "src": "/skip",
-      "dest": "api/index.py"
-    },
-    {
-      "src": "/active-session",
-      "dest": "api/index.py"
-    },
-    {
-      "src": "/login",
-      "dest": "/public/login.html"
-    },
-    {
-      "src": "/app",
-      "dest": "/public/app.html"
-    },
-    {
-      "src": "/leaderboard",
-      "dest": "/public/leaderboard.html"
-    },
-    {
-      "src": "/",
-      "dest": "/public/index.html"
-    },
-    { "src": "/leaderboard", 
-      "dest": "/public/leaderboard.html" 
-    },
-    { "src": "/friends", 
-      "dest": "/public/friends.html" 
-    },
-    { "src": "/friends/follow", 
-      "dest": "api/index.py" 
-    },
-    { "src": "/friends/unfollow", 
-      "dest": "api/index.py" 
-    },
-    { "src": "/friends/following", 
-      "dest": "api/index.py" 
-    },
-    { "src": "/friends/followers", 
-      "dest": "api/index.py" 
-    },
-    { "src": "/leaderboard/friends", 
-      "dest": "api/index.py" 
-    },
-    { "src": "/survey",
-      "dest": "/public/survey.html"
-    },
-    { "src": "/",
-      "dest": "/public/index.html"
-    }
+    { "src": "/auth/(.*)", "dest": "api/index.py" },
+    { "src": "/problem", "dest": "api/index.py" },
+    { "src": "/answer", "dest": "api/index.py" },
+    { "src": "/leaderboard/data", "dest": "api/index.py" },
+    { "src": "/history", "dest": "api/index.py" },
+    { "src": "/pool/status", "dest": "api/index.py" },
+    { "src": "/session/clear", "dest": "api/index.py" },
+    { "src": "/subscription/status", "dest": "api/index.py" },
+    { "src": "/stripe/(.*)", "dest": "api/index.py" },
+    { "src": "/skip", "dest": "api/index.py" },
+    { "src": "/active-session", "dest": "api/index.py" },
+    { "src": "/friends/follow", "dest": "api/index.py" },
+    { "src": "/friends/unfollow", "dest": "api/index.py" },
+    { "src": "/friends/following", "dest": "api/index.py" },
+    { "src": "/friends/followers", "dest": "api/index.py" },
+    { "src": "/leaderboard/friends", "dest": "api/index.py" },
+    { "src": "/survey/complete", "dest": "api/index.py" },
+    { "src": "/auth/account", "dest": "api/index.py" },
+    { "src": "/history-page", "dest": "/public/history.html" },
+    { "src": "/login", "dest": "/public/login.html" },
+    { "src": "/app", "dest": "/public/app.html" },
+    { "src": "/leaderboard", "dest": "/public/leaderboard.html" },
+    { "src": "/friends", "dest": "/public/friends.html" },
+    { "src": "/survey", "dest": "/public/survey.html" },
+    { "src": "/", "dest": "/public/index.html" }
   ]
 }

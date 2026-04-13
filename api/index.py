@@ -137,8 +137,6 @@ async def signup(req: SignUpRequest):
 
         # Use admin API to create user with email_confirm=True so Supabase
         # never sends a confirmation email and grants a session immediately.
-        # The user's email is stored and they can verify it later (e.g. before
-        # purchasing a subscription) — no blocking confirmation required.
         admin_res = supabase.auth.admin.create_user({
             "email": req.email,
             "password": req.password,
@@ -176,8 +174,11 @@ async def signup(req: SignUpRequest):
         raise
     except Exception as e:
         err = str(e)
+        print(f"SIGNUP ERROR RAW: {repr(e)}")  # add this line temporarily
         if "already registered" in err or "already been registered" in err or "User already registered" in err:
             raise HTTPException(status_code=400, detail="Email already registered. Please sign in instead.")
+        if "not allowed" in err.lower() or "User not allowed" in err:
+            raise HTTPException(status_code=400, detail="Signups are currently restricted. Please contact support.")
         raise HTTPException(status_code=400, detail=err)
 
 
@@ -196,8 +197,7 @@ async def signin(req: SignInRequest):
             if not profile.data:
                 raise HTTPException(status_code=401, detail="Username not found.")
             user_id = profile.data[0]["id"]
-            # Use admin client to get email
-            # Get email directly from profiles table (no admin API needed)
+            # Get email directly from profiles table
             email_profile = supabase.table("profiles")\
                 .select("email")\
                 .eq("id", user_id)\
@@ -221,9 +221,7 @@ async def signin(req: SignInRequest):
             profile = None
             username = ""
 
-        # Lazy profile creation: if no profile row exists yet (user signed up
-        # with email confirmation enabled), create it now using the username
-        # stored in auth user_metadata during signup.
+        # Lazy profile creation: if no profile row exists yet, create it now
         if not username:
             meta_username = ""
             if res.user.user_metadata:
@@ -252,7 +250,18 @@ async def get_me(user_id: str = Depends(verify_token)):
     profile = supabase.table("profiles").select("*").eq("id", user_id).single().execute()
     if not profile.data:
         raise HTTPException(status_code=404, detail="Profile not found")
-    return profile.data
+    data = profile.data
+    # Since all signups use email_confirm=True, every user is already confirmed.
+    # We set email_confirmed_at to a truthy value so the frontend banner never shows.
+    data["email_confirmed_at"] = data.get("created_at", "confirmed")
+    return data
+
+
+@app.post("/auth/resend-confirmation")
+async def resend_confirmation(user_id: str = Depends(verify_token)):
+    """Resend the email confirmation link. In practice all users are auto-confirmed,
+    so this is a no-op success — but the endpoint exists so the frontend doesn't 404."""
+    return {"ok": True}
 
 
 @app.get("/auth/google")
@@ -749,7 +758,6 @@ async def get_leaderboard(user_id: str = Depends(verify_token)):
 @app.post("/friends/follow")
 async def follow_user(req: FollowRequest, user_id: str = Depends(verify_token)):
     """Follow another user by username."""
-    # Look up the target user's id
     target = supabase.table("profiles")\
         .select("id,username")\
         .eq("username", req.username)\
@@ -838,7 +846,6 @@ async def get_followers(user_id: str = Depends(verify_token)):
 @app.get("/leaderboard/friends")
 async def get_friends_leaderboard(user_id: str = Depends(verify_token)):
     """Return leaderboard data for the current user + people they follow."""
-    # Get IDs of everyone the user follows
     follows_res = supabase.table("follows")\
         .select("following_id")\
         .eq("follower_id", user_id)\
