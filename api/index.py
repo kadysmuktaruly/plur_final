@@ -135,53 +135,46 @@ async def signup(req: SignUpRequest):
         if existing_username.data:
             raise HTTPException(status_code=400, detail="Username already taken. Please choose another.")
 
-        res = supabase.auth.sign_up({
+        # Use admin API to create user with email_confirm=True so Supabase
+        # never sends a confirmation email and grants a session immediately.
+        # The user's email is stored and they can verify it later (e.g. before
+        # purchasing a subscription) — no blocking confirmation required.
+        admin_res = supabase.auth.admin.create_user({
             "email": req.email,
             "password": req.password,
-            "options": {
-                "data": {"username": req.username},
-                "email_redirect_to": f"{SITE_URL}/login",
-            }
+            "email_confirm": True,
+            "user_metadata": {"username": req.username},
         })
-        if res.user is None:
+        if admin_res.user is None:
             raise HTTPException(status_code=400, detail="Signup failed")
 
-        # Username is stored in auth user_metadata (passed via `data` above).
-        # We create the profile row either:
-        #   a) right now if email confirmation is OFF (session exists), or
-        #   b) on first sign-in after the user confirms their email.
-        # This avoids RLS errors when trying to insert for an unconfirmed user.
-        if res.session:
-            supabase.table("profiles").upsert({
-                "id": res.user.id,
-                "username": req.username,
-                "email": req.email,
-                "total_correct": 0,
-                "total_attempted": 0,
-            }).execute()
+        user = admin_res.user
 
-        # Only return an access_token if Supabase granted a session
-        # (i.e. email confirmation is disabled — not recommended for production).
-        # When email confirmation IS enabled, session is None here and the
-        # frontend should show a "check your email" message instead of logging in.
-        if res.session and res.session.access_token:
-            # Email confirmation is disabled — log user in immediately
-            return {
-                "access_token": res.session.access_token,
-                "user": {"id": res.user.id, "email": res.user.email, "username": req.username}
-            }
-        else:
-            # Email confirmation is enabled (recommended) — ask user to verify
-            return {
-                "access_token": None,
-                "email_confirmation_required": True,
-                "user": {"id": res.user.id, "email": res.user.email, "username": req.username}
-            }
+        # Create profile row immediately (user is confirmed so no RLS issues)
+        supabase.table("profiles").upsert({
+            "id": user.id,
+            "username": req.username,
+            "email": req.email,
+            "total_correct": 0,
+            "total_attempted": 0,
+        }).execute()
+
+        # Sign in to get a real session token
+        session_res = supabase.auth.sign_in_with_password({
+            "email": req.email,
+            "password": req.password,
+        })
+        if not session_res.session:
+            raise HTTPException(status_code=400, detail="Account created but login failed. Please sign in.")
+
+        return {
+            "access_token": session_res.session.access_token,
+            "user": {"id": user.id, "email": user.email, "username": req.username}
+        }
 
     except HTTPException:
         raise
     except Exception as e:
-        # Catch Supabase duplicate email error
         err = str(e)
         if "already registered" in err or "already been registered" in err or "User already registered" in err:
             raise HTTPException(status_code=400, detail="Email already registered. Please sign in instead.")

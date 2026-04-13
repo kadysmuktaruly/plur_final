@@ -290,6 +290,33 @@
 
     .field { display: flex; flex-direction: column; gap: 0.4rem; }
 
+    .pw-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .pw-wrap input {
+      padding-right: 2.8rem;
+    }
+
+    .pw-toggle {
+      position: absolute;
+      right: 0.85rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      transition: color 0.15s;
+      flex-shrink: 0;
+    }
+
+    .pw-toggle:hover { color: var(--ink); }
+    .pw-toggle svg { width: 18px; height: 18px; pointer-events: none; }
+
     label {
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.65rem;
@@ -365,7 +392,25 @@
     }
     .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-
+    /* Google button */
+    .btn-google {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      background: white;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 0.8rem;
+      color: var(--ink);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-google:hover { border-color: rgba(0,0,0,0.2); box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-1px); }
+    .google-icon { width: 18px; height: 18px; }
 
     /* Messages */
     .msg {
@@ -478,7 +523,12 @@
         </div>
         <div class="field">
           <label>Password</label>
-          <input type="password" id="siPassword" placeholder="••••••••" autocomplete="current-password" />
+          <div class="pw-wrap">
+            <input type="password" id="siPassword" placeholder="••••••••" autocomplete="current-password" />
+            <button type="button" class="pw-toggle" onclick="togglePw('siPassword', this)" tabindex="-1" aria-label="Show password">
+              <svg id="siPassword-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
         </div>
         <div class="msg" id="siMsg"></div>
         <button class="btn-primary" id="siBtn" onclick="signIn()">Sign In →</button>
@@ -496,7 +546,21 @@
         </div>
         <div class="field">
           <label>Password</label>
-          <input type="password" id="suPassword" placeholder="min 6 characters" autocomplete="new-password" />
+          <div class="pw-wrap">
+            <input type="password" id="suPassword" placeholder="min 6 characters" autocomplete="new-password" />
+            <button type="button" class="pw-toggle" onclick="togglePw('suPassword', this)" tabindex="-1" aria-label="Show password">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Confirm Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="suPasswordConfirm" placeholder="repeat your password" autocomplete="new-password" />
+            <button type="button" class="pw-toggle" onclick="togglePw('suPasswordConfirm', this)" tabindex="-1" aria-label="Show password">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
         </div>
         <div class="msg" id="suMsg"></div>
         <button class="btn-primary" id="suBtn" onclick="signUp()">Create Account →</button>
@@ -679,10 +743,10 @@
       const username = document.getElementById('suUsername').value.trim();
       const email = document.getElementById('suEmail').value.trim();
       const password = document.getElementById('suPassword').value;
-      if (!username || !email || !password) return showMsg('suMsg', 'Please fill in all fields.', 'error');
+      const confirm = document.getElementById('suPasswordConfirm').value;
+      if (!username || !email || !password || !confirm) return showMsg('suMsg', 'Please fill in all fields.', 'error');
+      if (password !== confirm) return showMsg('suMsg', 'Passwords do not match.', 'error');
       if (password.length < 6) return showMsg('suMsg', 'Password must be at least 6 characters.', 'error');
-
-      // Basic email format check before even hitting the server
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         return showMsg('suMsg', 'Please enter a valid email address.', 'error');
       }
@@ -697,46 +761,26 @@
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || 'Sign up failed');
-
-        if (data.access_token) {
-          // Email confirmation disabled (dev mode) — log in immediately
-          localStorage.setItem('sat_token', data.access_token);
-          localStorage.setItem('sat_user', JSON.stringify(data.user));
-          window.location.href = '/survey';
-        } else {
-          // Email confirmation required — show confirmation screen
-          showEmailConfirmation(email);
-        }
+        localStorage.setItem('sat_token', data.access_token);
+        localStorage.setItem('sat_user', JSON.stringify(data.user));
+        window.location.href = '/survey';
       } catch (e) {
         showMsg('suMsg', e.message, 'error');
         btn.disabled = false; btn.textContent = 'Create Account →';
       }
     }
 
-    function showEmailConfirmation(email) {
-      const card = document.querySelector('.panel');
-      card.innerHTML = `
-        <div style="text-align:center;padding:2rem 1rem;">
-          <div style="font-size:3rem;margin-bottom:1rem;">📧</div>
-          <h2 style="color:#e8eaf6;font-size:1.4rem;margin-bottom:0.75rem;">Check your email</h2>
-          <p style="color:#9fa8c7;line-height:1.6;margin-bottom:1.5rem;">
-            We sent a confirmation link to<br>
-            <strong style="color:#7b8cde">${email}</strong>
-          </p>
-          <p style="color:#9fa8c7;font-size:0.875rem;line-height:1.6;margin-bottom:2rem;">
-            Click the link in the email to activate your account, then come back here to sign in.
-          </p>
-          <button class="btn-primary" onclick="window.location.href='/login'" style="width:100%">
-            Go to Sign In →
-          </button>
-          <p style="color:#6b7399;font-size:0.8rem;margin-top:1.25rem;">
-            Didn't receive it? Check your spam folder.
-          </p>
-        </div>
-      `;
+    function togglePw(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const isHidden = input.type === 'password';
+      input.type = isHidden ? 'text' : 'password';
+      btn.innerHTML = isHidden
+        ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
+        : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+      btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
     }
 
-document.addEventListener('keydown', e => {
+    document.addEventListener('keydown', e => {
       if (e.key === 'Enter') {
         if (document.getElementById('signinForm').classList.contains('active')) signIn();
         else signUp();
